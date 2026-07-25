@@ -94,13 +94,35 @@
   ::highlight(marg-sky){background-color:rgba(95,182,242,0.4);}
   ::highlight(marg-underline){text-decoration:underline;text-decoration-color:#E8508C;text-decoration-thickness:2.5px;text-underline-offset:3px;}
 
-  .hl-popup{position:fixed;display:none;gap:8px;background:#fff;padding:8px;border-radius:16px;box-shadow:0 6px 0 var(--line), 0 10px 24px rgba(0,0,0,0.15);z-index:100;border:2px solid var(--line);}
-  .hl-popup.show{display:flex;}
-  .hl-swatch{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,0.7);cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,0.12);}
-  .hl-swatch.pink{background:#FF6FA8;}
-  .hl-swatch.mint{background:#3FCBA8;}
-  .hl-swatch.sky{background:#5FB6F2;}
-  .hl-swatch.underline{background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;border:2px solid var(--line);}
+  .ink-layer{position:absolute;left:0;top:0;right:0;bottom:0;pointer-events:none;touch-action:none;}
+
+  .tool-dock{
+    position:fixed;top:50%;right:18px;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;
+    background:#fff;padding:9px;border-radius:22px;box-shadow:0 6px 0 var(--line), 0 10px 24px rgba(0,0,0,0.12);z-index:35;
+    border:2px solid var(--line);
+  }
+  .tool-btn{
+    width:38px;height:38px;border-radius:50%;border:2px solid transparent;background:var(--panel-2);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:var(--ink);
+    transition:transform .1s ease;
+  }
+  .tool-btn:active{transform:scale(0.92);}
+  .tool-btn.active{border-color:var(--ink);box-shadow:0 0 0 2px #fff inset;}
+  .tool-btn.tool-color.pink{background:#FF6FA8;}
+  .tool-btn.tool-color.mint{background:#3FCBA8;}
+  .tool-btn.tool-color.sky{background:#5FB6F2;}
+  .tool-dock hr{width:100%;border:none;border-top:2px solid var(--line);margin:2px 0;}
+  .tool-hint{
+    position:fixed;bottom:78px;left:50%;transform:translateX(-50%);background:#3A2E3F;color:#fff;
+    font-size:11.5px;font-weight:700;padding:6px 14px;border-radius:14px;z-index:34;opacity:0;pointer-events:none;transition:opacity .2s ease;
+    white-space:nowrap;
+  }
+  .tool-hint.show{opacity:0.94;}
+
+  @media (max-width: 780px){
+    .tool-dock{right:8px;padding:7px;gap:6px;}
+    .tool-btn{width:34px;height:34px;font-size:13px;}
+  }
 
   .page-nav{
     position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;
@@ -296,6 +318,7 @@
         <div class="page-canvas-wrap" id="canvasWrap">
           <canvas id="pdfCanvas"></canvas>
           <div class="textLayer" id="textLayer"></div>
+          <svg class="ink-layer" id="inkLayer"></svg>
         </div>
       </div>
     </div>
@@ -321,12 +344,17 @@
 
   <button class="fab" id="fabAdd" title="Add a book you want to read">+</button>
 
-  <div class="hl-popup" id="hlPopup">
-    <div class="hl-swatch pink" data-color="pink" title="Pink highlight"></div>
-    <div class="hl-swatch mint" data-color="mint" title="Mint highlight"></div>
-    <div class="hl-swatch sky" data-color="sky" title="Sky highlight"></div>
-    <div class="hl-swatch underline" data-color="underline" title="Underline">U</div>
+  <div class="tool-dock" id="toolDock" style="display:none;">
+    <button class="tool-btn active" data-tool="none" title="Just reading — no marking">👆</button>
+    <button class="tool-btn tool-color pink" data-tool="pink" title="Pink highlighter — drag over text"></button>
+    <button class="tool-btn tool-color mint" data-tool="mint" title="Mint highlighter — drag over text"></button>
+    <button class="tool-btn tool-color sky" data-tool="sky" title="Sky highlighter — drag over text"></button>
+    <button class="tool-btn" data-tool="underline" title="Underline — drag over text">U</button>
+    <hr/>
+    <button class="tool-btn" data-tool="pen" title="Pen — draw freely on the page">✎</button>
+    <button class="tool-btn" data-tool="eraser" title="Eraser — tap a mark to remove it">🧽</button>
   </div>
+  <div class="tool-hint" id="toolHint"></div>
 
   <!-- add-to-wishlist modal -->
   <div class="modal-scrim" id="addModalScrim">
@@ -469,6 +497,54 @@ function showToast(msg){
   t.classList.add('show');
   clearTimeout(showToast._t);
   showToast._t = setTimeout(()=> t.classList.remove('show'), 2200);
+}
+
+// ---------------- storage availability check ----------------
+// The "Couldn't save" that kept happening on EVERY save (not occasionally) usually
+// means window.storage itself isn't available in this viewing context, not that a
+// single request failed. We test it once at startup; if it's broken, we swap in an
+// in-memory shim with the identical interface so the app still works for this
+// session, and we tell the user honestly instead of pretending it saved.
+let PERSIST_OK = true;
+function installMemoryStorageShim(){
+  const mem = {};
+  const k = (key, shared) => (shared ? 'shared:' : 'me:') + key;
+  window.storage = {
+    async get(key, shared){
+      const kk = k(key, shared);
+      if (!(kk in mem)) throw new Error('key not found (in-memory shim)');
+      return { key, value: mem[kk], shared: !!shared };
+    },
+    async set(key, value, shared){ mem[k(key, shared)] = value; return { key, value, shared: !!shared }; },
+    async delete(key, shared){ delete mem[k(key, shared)]; return { key, deleted: true, shared: !!shared }; },
+    async list(prefix, shared){
+      const p = k(prefix || '', shared);
+      const keys = Object.keys(mem).filter(x => x.startsWith(p)).map(x => x.slice(shared ? 7 : 3));
+      return { keys, prefix, shared: !!shared };
+    }
+  };
+}
+function showPersistWarning(){
+  const banner = document.createElement('div');
+  banner.id = 'persistWarning';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:500;background:#3A2E3F;color:#fff;font-family:Nunito,sans-serif;font-size:12.5px;font-weight:700;text-align:center;padding:9px 14px;';
+  banner.innerHTML = "⚠️ This session can't reach saved storage right now — your bookmarks, notes and highlights will disappear if you close or reload this tab. <span style=\"text-decoration:underline;cursor:pointer;\" id=\"dismissPersistWarning\">Dismiss</span>";
+  document.body.prepend(banner);
+  document.getElementById('dismissPersistWarning').addEventListener('click', ()=> banner.remove());
+}
+async function checkStorageAvailability(){
+  try{
+    if (typeof window.storage === 'undefined') throw new Error('window.storage is not defined in this context');
+    const testVal = String(Date.now());
+    await window.storage.set('__marg_boot_check__', testVal, false);
+    const readBack = await window.storage.get('__marg_boot_check__', false);
+    if (!readBack || readBack.value !== testVal) throw new Error('storage did not round-trip correctly');
+  }catch(e){
+    console.warn('Persistent storage unavailable, falling back to in-memory for this session:', e);
+    PERSIST_OK = false;
+    installMemoryStorageShim();
+    showPersistWarning();
+  }
 }
 
 // ---------------- hashing ----------------
@@ -846,7 +922,7 @@ async function openFile(file){
 
     state = existing || {
       title: file.name, numPages: pdfDoc.numPages, currentPage: 1,
-      bookmarks: [], notes: [], highlights: [], celebrated: false, halfCelebrated: false
+      bookmarks: [], notes: [], highlights: [], ink: {}, celebrated: false, halfCelebrated: false
     };
     state.title = file.name;
     state.numPages = pdfDoc.numPages;
@@ -854,6 +930,7 @@ async function openFile(file){
     if (!state.currentPage || state.currentPage > pdfDoc.numPages) state.currentPage = 1;
     if (typeof state.celebrated !== 'boolean') state.celebrated = false;
     if (typeof state.halfCelebrated !== 'boolean') state.halfCelebrated = false;
+    if (!state.ink) state.ink = {};
 
     await flushBookState();
     el('loadingNote').textContent = '';
@@ -883,6 +960,7 @@ function enterReader(){
   el('pageNav').style.display = 'flex';
   el('bookMeta').style.display = 'flex';
   el('libraryBtn').style.display = 'inline-flex';
+  el('toolDock').style.display = 'flex';
   el('bookTitleLabel').textContent = state.title;
   el('numPagesLabel').textContent = state.numPages;
   renderSidebarTab();
@@ -897,6 +975,8 @@ function returnToShelf(){
   el('pageNav').style.display = 'none';
   el('bookMeta').style.display = 'none';
   el('libraryBtn').style.display = 'none';
+  el('toolDock').style.display = 'none';
+  setActiveTool('none');
   el('shelfView').style.display = 'flex';
   el('fabAdd').style.display = 'flex';
   pdfDoc = null; state = null; currentBookId = null;
@@ -945,6 +1025,13 @@ async function goToPage(num, skipSave){
     if (task && task.promise) await task.promise;
 
     reapplyHighlightsForPage(num, textLayerDiv);
+
+    const inkLayer = el('inkLayer');
+    inkLayer.setAttribute('width', viewport.width);
+    inkLayer.setAttribute('height', viewport.height);
+    inkLayer.style.width = viewport.width + 'px';
+    inkLayer.style.height = viewport.height + 'px';
+    renderInkForPage(num);
   }catch(e){
     console.error(e);
     showToast('Could not render this page');
@@ -1072,7 +1159,7 @@ function applyFallbackMark(range, color){
     range.surroundContents(mark);
   }catch(e){ /* range spans multiple elements — CSS Highlight API path handles that case; fallback just skips it */ }
 }
-function addHighlightFromSelection(color){
+function commitHighlightFromSelection(color){
   const sel = window.getSelection();
   if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
   const text = sel.toString().trim();
@@ -1087,53 +1174,161 @@ function addHighlightFromSelection(color){
     applyFallbackMark(range, color);
   }
   sel.removeAllRanges();
-  hideHlPopup();
   saveBookState();
   if (activeTab === 'highlights') renderSidebarTab();
 }
-function hideHlPopup(){ el('hlPopup').classList.remove('show'); }
+function eraseHighlightsInSelection(sel){
+  const text = sel.toString().trim();
+  if (!text) return;
+  const before = state.highlights.length;
+  state.highlights = state.highlights.filter(h=>{
+    if (h.page !== state.currentPage) return true;
+    return !(text.includes(h.text) || h.text.includes(text));
+  });
+  sel.removeAllRanges();
+  if (state.highlights.length !== before){
+    reapplyHighlightsForPage(state.currentPage, el('textLayer'));
+    saveBookState();
+    if (activeTab === 'highlights') renderSidebarTab();
+  }
+}
 
+// ---------------- tool dock: pick a tool, then mark the page like a real pen ----------------
+let activeTool = 'none';
+function showToolHint(msg){
+  const hint = el('toolHint');
+  hint.textContent = msg;
+  hint.classList.add('show');
+  clearTimeout(showToolHint._t);
+  showToolHint._t = setTimeout(()=> hint.classList.remove('show'), 1800);
+}
+function setActiveTool(tool){
+  activeTool = tool;
+  document.querySelectorAll('#toolDock .tool-btn').forEach(b=> b.classList.toggle('active', b.dataset.tool===tool));
+  const textLayer = el('textLayer');
+  const inkLayer = el('inkLayer');
+  if (tool === 'pen'){
+    inkLayer.style.pointerEvents = 'auto';
+    textLayer.style.pointerEvents = 'none';
+    showToolHint('Draw on the page ✎');
+  } else if (tool === 'eraser'){
+    inkLayer.style.pointerEvents = 'auto';
+    textLayer.style.pointerEvents = 'auto';
+    showToolHint('Tap a mark to erase it');
+  } else if (tool === 'none'){
+    inkLayer.style.pointerEvents = 'none';
+    textLayer.style.pointerEvents = 'auto';
+  } else {
+    inkLayer.style.pointerEvents = 'none';
+    textLayer.style.pointerEvents = 'auto';
+    showToolHint(tool === 'underline' ? 'Drag over words to underline' : 'Drag over words to highlight');
+  }
+}
+document.querySelectorAll('#toolDock .tool-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=> setActiveTool(btn.dataset.tool));
+});
+
+// Selecting/dragging over text with a highlighter or underline tool active commits
+// the mark the instant you let go — no extra click on a color swatch needed,
+// since the color was already "loaded" by picking the tool first.
+function handleTextMarkGesture(){
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed || !sel.toString().trim()) return;
+  if (activeTool === 'eraser'){ eraseHighlightsInSelection(sel); }
+  else if (activeTool === 'pink' || activeTool === 'mint' || activeTool === 'sky' || activeTool === 'underline'){
+    commitHighlightFromSelection(activeTool);
+  }
+}
 document.addEventListener('mouseup', (e)=>{
   if (!pdfDoc) return;
-  const textLayer = el('textLayer');
-  if (!textLayer.contains(e.target)) return;
-  setTimeout(()=>{
-    const sel = window.getSelection();
-    if (!sel || sel.isCollapsed || !sel.toString().trim()){ hideHlPopup(); return; }
-    const rect = sel.getRangeAt(0).getBoundingClientRect();
-    const popup = el('hlPopup');
-    const popupWidth = 150;
-    let left = rect.left + rect.width/2 - popupWidth/2;
-    left = Math.max(8, Math.min(left, window.innerWidth - popupWidth - 8));
-    popup.style.left = left + 'px';
-    popup.style.top = Math.max(8, rect.top - 56) + 'px';
-    popup.classList.add('show');
-  }, 10);
+  if (!el('textLayer').contains(e.target)) return;
+  if (activeTool === 'none' || activeTool === 'pen') return;
+  setTimeout(handleTextMarkGesture, 10);
 });
-// also catch selections made by touch (mobile) — "touchend" fires before the
-// selection is finalized on some browsers, so we re-check shortly after.
 document.addEventListener('touchend', (e)=>{
   if (!pdfDoc) return;
-  const textLayer = el('textLayer');
-  if (!textLayer.contains(e.target)) return;
-  setTimeout(()=>{
-    const sel = window.getSelection();
-    if (!sel || sel.isCollapsed || !sel.toString().trim()) return;
-    const rect = sel.getRangeAt(0).getBoundingClientRect();
-    const popup = el('hlPopup');
-    const popupWidth = 150;
-    let left = rect.left + rect.width/2 - popupWidth/2;
-    left = Math.max(8, Math.min(left, window.innerWidth - popupWidth - 8));
-    popup.style.left = left + 'px';
-    popup.style.top = Math.max(8, rect.top - 56) + 'px';
-    popup.classList.add('show');
-  }, 250);
+  if (!el('textLayer').contains(e.target)) return;
+  if (activeTool === 'none' || activeTool === 'pen') return;
+  setTimeout(handleTextMarkGesture, 250);
 });
-document.querySelectorAll('.hl-swatch').forEach(sw=>{
-  sw.addEventListener('mousedown', ev=> ev.preventDefault());
-  sw.addEventListener('click', ()=> addHighlightFromSelection(sw.dataset.color));
-});
-document.addEventListener('mousedown', (e)=>{ if (!el('hlPopup').contains(e.target)) hideHlPopup(); });
+
+// ---------------- freehand pen: real ink strokes drawn straight on the page ----------------
+function pointsToPathD(points){
+  if (!points.length) return '';
+  let d = `M ${points[0][0].toFixed(1)} ${points[0][1].toFixed(1)}`;
+  for (let i=1;i<points.length;i++) d += ` L ${points[i][0].toFixed(1)} ${points[i][1].toFixed(1)}`;
+  return d;
+}
+function penColorHex(){ return '#3A2E3F'; }
+let inkDrawing = false, inkPoints = [], livePathEl = null;
+const inkLayerEl = () => el('inkLayer');
+function getInkPoint(e){
+  const rect = inkLayerEl().getBoundingClientRect();
+  const t = e.touches && e.touches[0] ? e.touches[0] : e;
+  return [t.clientX - rect.left, t.clientY - rect.top];
+}
+function inkPointerDown(e){
+  if (activeTool !== 'pen') return;
+  inkDrawing = true;
+  inkPoints = [getInkPoint(e)];
+  livePathEl = document.createElementNS('http://www.w3.org/2000/svg','path');
+  livePathEl.setAttribute('fill','none');
+  livePathEl.setAttribute('stroke', penColorHex());
+  livePathEl.setAttribute('stroke-width','3');
+  livePathEl.setAttribute('stroke-linecap','round');
+  livePathEl.setAttribute('stroke-linejoin','round');
+  inkLayerEl().appendChild(livePathEl);
+  e.preventDefault();
+}
+function inkPointerMove(e){
+  if (!inkDrawing) return;
+  inkPoints.push(getInkPoint(e));
+  if (livePathEl) livePathEl.setAttribute('d', pointsToPathD(inkPoints));
+  e.preventDefault();
+}
+function inkPointerUp(){
+  if (!inkDrawing) return;
+  inkDrawing = false;
+  if (inkPoints.length >= 2){
+    const id = 'k' + Date.now() + Math.random().toString(36).slice(2,6);
+    state.ink = state.ink || {};
+    state.ink[state.currentPage] = state.ink[state.currentPage] || [];
+    state.ink[state.currentPage].push({ id, points: inkPoints });
+    saveBookState();
+  } else if (livePathEl){
+    livePathEl.remove();
+  }
+  livePathEl = null;
+  inkPoints = [];
+}
+el('inkLayer').addEventListener('mousedown', inkPointerDown);
+document.addEventListener('mousemove', inkPointerMove);
+document.addEventListener('mouseup', inkPointerUp);
+el('inkLayer').addEventListener('touchstart', inkPointerDown, { passive:false });
+el('inkLayer').addEventListener('touchmove', inkPointerMove, { passive:false });
+el('inkLayer').addEventListener('touchend', inkPointerUp);
+function renderInkForPage(pageNum){
+  const layer = inkLayerEl();
+  layer.innerHTML = '';
+  const strokes = (state.ink && state.ink[pageNum]) || [];
+  strokes.forEach(s=>{
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', pointsToPathD(s.points));
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke', penColorHex());
+    path.setAttribute('stroke-width','3');
+    path.setAttribute('stroke-linecap','round');
+    path.setAttribute('stroke-linejoin','round');
+    path.style.cursor = 'pointer';
+    path.addEventListener('click', ()=>{
+      if (activeTool !== 'eraser') return;
+      state.ink[pageNum] = state.ink[pageNum].filter(x=>x.id!==s.id);
+      saveBookState();
+      renderInkForPage(pageNum);
+    });
+    layer.appendChild(path);
+  });
+}
 
 // ---------------- bookmarks & notes ----------------
 function isBookmarked(page){ return (state.bookmarks||[]).some(b=>b.page===page); }
@@ -1252,7 +1447,7 @@ el('dropzone').addEventListener('dragleave', ()=> el('dropzone').classList.remov
 el('dropzone').addEventListener('drop', (e)=>{ e.preventDefault(); el('dropzone').classList.remove('drag'); if (e.dataTransfer.files[0]) openFile(e.dataTransfer.files[0]); });
 
 // init
-renderShelf();
+checkStorageAvailability().then(renderShelf);
 </script>
 </body>
 </html>
