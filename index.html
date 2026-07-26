@@ -99,6 +99,11 @@
     filter:drop-shadow(0 4px 6px rgba(0,0,0,0.15));
   }
   .reader-mascot .mascot{width:100%;height:100%;}
+  .mascot-goal-badge{
+    position:absolute;top:-4px;right:-4px;width:20px;height:20px;border-radius:50%;
+    background:var(--butter);border:2px solid #fff;display:flex;align-items:center;justify-content:center;
+    font-size:11px;box-shadow:0 2px 4px rgba(0,0,0,0.2);animation:sparklePop 1.6s ease-in-out infinite;
+  }
 
   .tool-fab-wrap{position:fixed;bottom:26px;right:26px;z-index:45;display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
   .tool-fab{position:static;box-shadow:0 6px 0 var(--pink-dark), 0 10px 24px rgba(232,80,140,0.35);font-size:24px;}
@@ -232,6 +237,12 @@
     display:inline-flex;align-items:center;gap:4px;background:var(--panel-2);color:var(--sky-dark);
     font-weight:800;font-size:12px;padding:4px 10px;border-radius:12px;cursor:pointer;border:none;
   }
+  .insights-card{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:16px;margin:0 0 18px;box-shadow:0 4px 0 var(--line);}
+  .insights-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--ink);margin:0 0 12px;}
+  .insights-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(120px,1fr));gap:10px;}
+  .insight-stat{background:var(--panel-2);border-radius:14px;padding:10px 12px;}
+  .insight-stat .n{font-size:19px;font-weight:800;color:var(--pink-dark);font-family:var(--serif);}
+  .insight-stat .l{font-size:11px;color:var(--ink-soft);font-weight:700;margin-top:2px;}
   .dropzone{
     border:3px dashed var(--line);border-radius:20px;padding:22px 20px;text-align:center;cursor:pointer;
     margin:22px 0 30px;background:var(--panel);transition:border-color .15s ease, background .15s ease;
@@ -366,6 +377,8 @@
 
         <div id="moodCard"></div>
 
+        <div id="insightsSection"></div>
+
         <div class="dropzone" id="dropzone">
           <div class="dropzone-title">Drop a PDF here, or tap to choose one</div>
           <div class="dropzone-sub">It stays on your device — nothing gets uploaded.</div>
@@ -476,9 +489,13 @@
   <div class="celebrate-scrim" id="celebrateScrim">
     <div class="celebrate-card" id="celebrateCard">
       <div id="mascotCelebrate"></div>
-      <h2>You finished it! 🎉</h2>
-      <p>That's one more book on your shelf. Nicely done.</p>
-      <button class="btn btn-pink" id="celebrateClose">Yay, thanks!</button>
+      <h2 id="celebrateTitle">You finished it! 🎉</h2>
+      <p id="celebrateSubtitle">That's one more book on your shelf. Nicely done.</p>
+      <p id="celebrateQuote" style="display:none;font-weight:800;color:var(--pink-dark);font-size:12.5px;margin:-8px 0 16px;"></p>
+      <div class="modal-actions" style="margin-top:0;">
+        <button class="btn btn-ghost" id="celebrateContinueBtn" style="display:none;">Continue Reading</button>
+        <button class="btn btn-pink" id="celebrateClose">Yay, thanks!</button>
+      </div>
     </div>
   </div>
 
@@ -806,31 +823,93 @@ function todayStr(offsetDays){
   d.setDate(d.getDate() + (offsetDays||0));
   return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
 }
+function ensureStreakDefaults(streak){
+  if (typeof streak.goalPages !== 'number') streak.goalPages = 10;
+  if (!Array.isArray(streak.visitedPagesToday)) streak.visitedPagesToday = [];
+  if (typeof streak.goalCompletedToday !== 'boolean') streak.goalCompletedToday = false;
+  if (typeof streak.lastGoalDate !== 'string') streak.lastGoalDate = null;
+  if (!Array.isArray(streak.toastMilestonesShown)) streak.toastMilestonesShown = [];
+  if (typeof streak.totalPagesRead !== 'number') streak.totalPagesRead = 0;
+  if (typeof streak.goalsCompletedCount !== 'number') streak.goalsCompletedCount = 0;
+  if (!streak.streakBadgesShown || typeof streak.streakBadgesShown !== 'object') streak.streakBadgesShown = {};
+  if (typeof streak.lastAppOpenDate !== 'string') streak.lastAppOpenDate = null;
+  const today = todayStr(0);
+  if (streak.lastGoalDate !== today){
+    // date changed since we last checked — reset everything the daily goal cares about
+    streak.lastGoalDate = today;
+    streak.visitedPagesToday = [];
+    streak.goalCompletedToday = false;
+    streak.toastMilestonesShown = [];
+  }
+  return streak;
+}
 async function loadStreak(){
+  let streak;
   try{
     const res = await window.storage.get('streak', false);
-    if (res && res.value) return JSON.parse(res.value);
-  }catch(e){}
-  return { currentStreak: 0, longestStreak: 0, lastReadDate: null, history: {}, goalPages: 10 };
+    streak = (res && res.value) ? JSON.parse(res.value) : null;
+  }catch(e){ streak = null; }
+  if (!streak) streak = { currentStreak: 0, longestStreak: 0, lastReadDate: null, history: {}, goalPages: 10 };
+  return ensureStreakDefaults(streak);
 }
 async function saveStreak(streak){
   try{ await storageSetWithRetry('streak', JSON.stringify(streak), false); }
   catch(e){ /* silent, non-critical */ }
 }
-
+async function loadAchievements(){
+  try{
+    const res = await window.storage.get('achievements', false);
+    if (res && res.value) return JSON.parse(res.value);
+  }catch(e){}
+  return {};
+}
+async function unlockAchievement(id, emoji, label){
+  const ach = await loadAchievements();
+  if (ach[id]) return false; // never unlock twice
+  ach[id] = { unlockedAt: Date.now() };
+  try{ await storageSetWithRetry('achievements', JSON.stringify(ach), false); }catch(e){}
+  showToast(`${emoji} Achievement unlocked: ${label}`);
+  return true;
+}
+const ACHIEVEMENTS = {
+  firstBook:      { emoji:'📖', label:'First Book' },
+  streak7:        { emoji:'🔥', label:'7 Day Streak' },
+  pages100:       { emoji:'📚', label:'Read 100 Pages' },
+  pages1000:      { emoji:'📘', label:'Read 1000 Pages' },
+  firstHighlight: { emoji:'📝', label:'First Highlight' },
+  firstNote:      { emoji:'📌', label:'First Sticky Note' },
+  firstUnderline: { emoji:'✍', label:'First Underline' },
+  goalCrusher:    { emoji:'🎯', label:'Goal Crusher (10 daily goals)' }
+};
 // Page turns happen fast — flipping through a chapter used to fire a get+set to the
 // streak key on EVERY single page. That's now batched in memory and flushed on the
 // same debounce as the book save, so a quick flip-through costs one write, not N.
 let pendingPageIncrements = 0;
+let pendingVisitedPages = new Set();
 let streakFlushTimer = null;
-function queueReadingActivity(){
+function queueReadingActivity(pageNum){
   pendingPageIncrements += 1;
+  if (pageNum != null) pendingVisitedPages.add(pageNum);
   clearTimeout(streakFlushTimer);
   streakFlushTimer = setTimeout(flushReadingActivity, 400);
 }
+const GOAL_MILESTONE_TOASTS = [
+  { at: 15, msg: "📖 You're on fire!" },
+  { at: 20, msg: "🔥 Amazing consistency!" },
+  { at: 30, msg: "🌟 Incredible! Knowledge compounds." },
+  { at: 50, msg: "🏆 Reading Machine!" }
+];
+const STREAK_BADGES = [
+  { at: 7,   title: '🏅 Bronze Reader',  achievement:'streak7' },
+  { at: 30,  title: '🥈 Silver Reader' },
+  { at: 100, title: '🥇 Gold Reader' },
+  { at: 365, title: '👑 Legendary Reader' }
+];
 async function flushReadingActivity(){
   const inc = pendingPageIncrements;
+  const visitedNow = pendingVisitedPages;
   pendingPageIncrements = 0;
+  pendingVisitedPages = new Set();
   if (inc <= 0) return;
   const streak = await loadStreak();
   const today = todayStr(0);
@@ -844,9 +923,47 @@ async function flushReadingActivity(){
   streak.history[today] = (streak.history[today]||0) + inc;
   const keys = Object.keys(streak.history).sort();
   if (keys.length > 30){ keys.slice(0, keys.length-30).forEach(k=> delete streak.history[k]); }
+
+  // Unique-pages-today (dedupes revisits like page 3, 3 again) — this drives the daily goal
+  const beforeCount = streak.visitedPagesToday.length;
+  visitedNow.forEach(p=>{ if (!streak.visitedPagesToday.includes(p)) streak.visitedPagesToday.push(p); });
+  const newlyUnique = streak.visitedPagesToday.length - beforeCount;
+  streak.totalPagesRead = (streak.totalPagesRead||0) + Math.max(0, newlyUnique);
+  const pagesToday = streak.visitedPagesToday.length;
+
+  let goalJustCompleted = false;
+  if (!streak.goalCompletedToday && pagesToday >= (streak.goalPages||10)){
+    streak.goalCompletedToday = true;
+    streak.goalsCompletedCount = (streak.goalsCompletedCount||0) + 1;
+    goalJustCompleted = true;
+  }
+
+  GOAL_MILESTONE_TOASTS.forEach(m=>{
+    if (pagesToday >= m.at && !streak.toastMilestonesShown.includes(m.at)){
+      streak.toastMilestonesShown.push(m.at);
+      showToast(m.msg);
+    }
+  });
+
+  let streakBadgeToShow = null;
+  STREAK_BADGES.forEach(b=>{
+    if (streak.currentStreak >= b.at && !streak.streakBadgesShown[b.at]){
+      streak.streakBadgesShown[b.at] = true;
+      streakBadgeToShow = b;
+    }
+  });
+
   await saveStreak(streak);
   if (el('moodCard') && el('shelfView').style.display !== 'none') renderMoodCard();
   updateReaderMascot();
+
+  if (streak.totalPagesRead >= 100) unlockAchievement('pages100', ACHIEVEMENTS.pages100.emoji, ACHIEVEMENTS.pages100.label);
+  if (streak.totalPagesRead >= 1000) unlockAchievement('pages1000', ACHIEVEMENTS.pages1000.emoji, ACHIEVEMENTS.pages1000.label);
+  if (streak.goalsCompletedCount >= 10) unlockAchievement('goalCrusher', ACHIEVEMENTS.goalCrusher.emoji, ACHIEVEMENTS.goalCrusher.label);
+
+  // never stack two celebration popups — goal completion takes priority over a streak badge
+  if (goalJustCompleted){ showGoalCompleteCelebration(); }
+  else if (streakBadgeToShow){ showStreakBadgeCelebration(streakBadgeToShow); }
 }
 
 function timeAgo(ts){
@@ -871,15 +988,32 @@ async function updateReaderMascot(){
   const today = todayStr(0);
   const yesterday = todayStr(-1);
   let mood = 'happy';
-  if (streak.lastReadDate === today) mood = 'happy';
+  if (streak.goalCompletedToday) mood = 'celebrate';
+  else if (streak.lastReadDate === today) mood = 'happy';
   else if (streak.lastReadDate === yesterday && streak.currentStreak > 0) mood = 'worried';
   else if (streak.currentStreak > 0 || streak.lastReadDate) mood = 'sad';
   bubble.innerHTML = mascotHTML({ size: bubble.clientWidth || 52, mood, reading: true });
+  renderMascotBadge(bubble, streak);
   bubble.onclick = ()=>{
     const goal = streak.goalPages || 10;
-    const pagesToday = (streak.history && streak.history[today]) || 0;
-    showToast(`🔥 ${streak.currentStreak||0} day streak · ${pagesToday}/${goal} pages today`);
+    const pagesToday = streak.visitedPagesToday ? streak.visitedPagesToday.length : ((streak.history && streak.history[today]) || 0);
+    if (streak.goalCompletedToday){
+      showToast(`Today's Goal Complete — ${pagesToday}/${goal} Pages · Keep Reading 📖`);
+    } else {
+      showToast(`🔥 ${streak.currentStreak||0} day streak · ${pagesToday}/${goal} pages today`);
+    }
   };
+}
+function renderMascotBadge(bubble, streak){
+  let badge = bubble.querySelector('.mascot-goal-badge');
+  if (streak.goalCompletedToday){
+    if (!badge){
+      badge = document.createElement('div');
+      badge.className = 'mascot-goal-badge';
+      badge.textContent = '🔥';
+      bubble.appendChild(badge);
+    }
+  } else if (badge){ badge.remove(); }
 }
 
 async function renderMoodCard(){
@@ -888,7 +1022,10 @@ async function renderMoodCard(){
   const yesterday = todayStr(-1);
   let mood, message;
 
-  if (streak.lastReadDate === today){
+  if (streak.goalCompletedToday){
+    mood = 'celebrate';
+    message = `🎉 Today's goal is complete! ${streak.currentStreak||0} day streak and counting. Keep it up 🔥`;
+  } else if (streak.lastReadDate === today){
     mood = 'happy';
     message = streak.currentStreak > 1
       ? `You read today — ${streak.currentStreak} day streak! Keep it up 🔥`
@@ -905,7 +1042,7 @@ async function renderMoodCard(){
   }
 
   const goal = streak.goalPages || 10;
-  const pagesToday = (streak.history && streak.history[today]) || 0;
+  const pagesToday = streak.visitedPagesToday ? streak.visitedPagesToday.length : ((streak.history && streak.history[today]) || 0);
 
   let dotsHtml = '';
   for (let i=6;i>=0;i--){
@@ -940,8 +1077,42 @@ async function renderMoodCard(){
   });
 }
 
+async function renderInsights(){
+  const box = el('insightsSection');
+  if (!box) return;
+  const streak = await loadStreak();
+  const library = await listLibrary();
+  const today = todayStr(0);
+  const finishedCount = library.filter(b => b.numPages && b.currentPage >= b.numPages).length;
+  const currentBook = library.slice().sort((a,b)=>(b.lastOpened||0)-(a.lastOpened||0))[0];
+  const currentPct = currentBook && currentBook.numPages ? Math.round((currentBook.currentPage/currentBook.numPages)*100) : 0;
+
+  const weekKeys = []; for (let i=6;i>=0;i--) weekKeys.push(todayStr(-i));
+  const weeklyPages = weekKeys.reduce((sum,k)=> sum + ((streak.history && streak.history[k]) || 0), 0);
+  const historyDays = Object.keys(streak.history||{}).length || 1;
+  const totalHistoryPages = Object.values(streak.history||{}).reduce((a,b)=>a+b,0);
+  const avgPerDay = Math.round(totalHistoryPages / historyDays);
+  const pagesToday = streak.visitedPagesToday ? streak.visitedPagesToday.length : ((streak.history && streak.history[today]) || 0);
+
+  box.innerHTML = `
+    <div class="insights-card">
+      <div class="insights-title">📊 Reading Insights</div>
+      <div class="insights-grid">
+        <div class="insight-stat"><div class="n">${pagesToday}</div><div class="l">Today's Pages</div></div>
+        <div class="insight-stat"><div class="n">${weeklyPages}</div><div class="l">Weekly Pages</div></div>
+        <div class="insight-stat"><div class="n">${streak.currentStreak||0}</div><div class="l">Current Streak</div></div>
+        <div class="insight-stat"><div class="n">${streak.longestStreak||0}</div><div class="l">Longest Streak</div></div>
+        <div class="insight-stat"><div class="n">${finishedCount}</div><div class="l">Books Finished</div></div>
+        <div class="insight-stat"><div class="n">${streak.totalPagesRead||0}</div><div class="l">Pages Read</div></div>
+        <div class="insight-stat"><div class="n">${currentBook ? currentPct + '%' : '—'}</div><div class="l">Current Book Progress</div></div>
+        <div class="insight-stat"><div class="n">${avgPerDay}</div><div class="l">Avg Pages / Day</div></div>
+      </div>
+    </div>`;
+}
+
 async function renderShelf(){
   renderMoodCard();
+  renderInsights();
   const wishlist = await loadWishlist();
   const library = await listLibrary();
   const reading = library.filter(b => b.numPages && b.currentPage < b.numPages);
@@ -1127,9 +1298,19 @@ function enterReader(){
   el('toolFabWrap').style.display = 'flex';
   el('readerMascot').style.display = 'block';
   updateReaderMascot();
+  triggerMascotWave();
   el('bookTitleLabel').textContent = state.title;
   el('numPagesLabel').textContent = state.numPages;
   renderSidebarTab();
+}
+function triggerMascotWave(){
+  showToast('👋 Happy reading!');
+  const bubble = el('readerMascot');
+  if (!bubble) return;
+  const m = bubble.querySelector('.mascot');
+  if (!m) return;
+  m.style.animation = 'catSway 0.5s ease-in-out 2'; // reuses the existing catSway keyframe
+  setTimeout(()=>{ m.style.animation = ''; }, 1050);
 }
 
 function returnToShelf(){
@@ -1208,7 +1389,7 @@ async function goToPage(num, skipSave){
     showToast('Could not render this page');
   }
 
-  if (!skipSave){ saveBookState(); queueReadingActivity(); }
+  if (!skipSave){ saveBookState(); queueReadingActivity(num); }
   updateSpine();
   renderSidebarTab();
 
@@ -1222,6 +1403,7 @@ async function goToPage(num, skipSave){
     state.celebrated = true;
     saveBookState();
     launchCelebration();
+    unlockAchievement('firstBook', ACHIEVEMENTS.firstBook.emoji, ACHIEVEMENTS.firstBook.label);
   }
 
   rendering = false;
@@ -1242,10 +1424,34 @@ function updateSpine(){
 }
 
 // ---------------- celebration ----------------
-function launchCelebration(){
+const MOTIVATIONAL_QUOTES = [
+  'Small progress every day becomes massive growth.',
+  'Your future self is smiling.',
+  'Books compound like money.',
+  'One more page.\nOne better version of you.',
+  'Consistency beats intensity.',
+  'Knowledge compounds.',
+  "Today's reading is tomorrow's advantage.",
+  "Keep going.\nYou're building something incredible."
+];
+function launchCelebration(config){
+  config = config || {};
+  const mood = config.mascotMood || 'celebrate';
+  el('celebrateTitle').textContent = config.title || 'You finished it! 🎉';
+  el('celebrateSubtitle').textContent = config.subtitle || "That's one more book on your shelf. Nicely done.";
+  const quoteEl = el('celebrateQuote');
+  if (config.showQuote){
+    quoteEl.textContent = MOTIVATIONAL_QUOTES[Math.floor(Math.random()*MOTIVATIONAL_QUOTES.length)];
+    quoteEl.style.display = 'block';
+  } else { quoteEl.style.display = 'none'; quoteEl.textContent = ''; }
+  el('mascotCelebrate').innerHTML = mascotSVG({ size: 72, celebrate: (mood==='celebrate') });
+  el('celebrateContinueBtn').style.display = config.showContinue ? 'inline-flex' : 'none';
+  el('celebrateClose').textContent = config.closeLabel || 'Yay, thanks!';
+
   const scrim = el('celebrateScrim');
   scrim.classList.add('show');
   const card = el('celebrateCard');
+  card.querySelectorAll('.confetti').forEach(c=>c.remove());
   const colors = ['#FF6FA8','#3FCBA8','#5FB6F2','#FFC94D','#B49AF0'];
   for (let i=0;i<24;i++){
     const c = document.createElement('div');
@@ -1258,7 +1464,25 @@ function launchCelebration(){
     setTimeout(()=> c.remove(), 2200);
   }
 }
-el('celebrateClose').addEventListener('click', ()=> el('celebrateScrim').classList.remove('show'));
+function closeCelebration(){ el('celebrateScrim').classList.remove('show'); }
+el('celebrateClose').addEventListener('click', closeCelebration);
+el('celebrateContinueBtn').addEventListener('click', closeCelebration);
+
+function showGoalCompleteCelebration(){
+  launchCelebration({
+    title: '🎉 Daily Goal Complete!',
+    subtitle: "Amazing job! You completed today's reading goal. Every page you read is an investment in your future. Keep the streak alive 🔥",
+    mascotMood: 'celebrate', showContinue: true, closeLabel: 'Dismiss', showQuote: true
+  });
+}
+function showStreakBadgeCelebration(badge){
+  launchCelebration({
+    title: badge.title,
+    subtitle: `You've kept your reading streak going for ${badge.at} days straight. That's real consistency.`,
+    mascotMood: 'celebrate', showContinue: true, closeLabel: 'Dismiss', showQuote: true
+  });
+  if (badge.achievement) unlockAchievement(badge.achievement, ACHIEVEMENTS[badge.achievement].emoji, ACHIEVEMENTS[badge.achievement].label);
+}
 
 // ---------------- highlighter, underline & pen: all one brush system now ----------------
 // Per your request: these behave like a Photoshop brush — draw anywhere on the page,
@@ -1400,6 +1624,8 @@ function inkPointerUp(){
     state.ink[state.currentPage] = state.ink[state.currentPage] || [];
     state.ink[state.currentPage].push({ id, kind: activeTool, points: inkPoints });
     saveBookState();
+    if (activeTool === 'underline') unlockAchievement('firstUnderline', ACHIEVEMENTS.firstUnderline.emoji, ACHIEVEMENTS.firstUnderline.label);
+    else if (activeTool === 'pink' || activeTool === 'mint' || activeTool === 'sky') unlockAchievement('firstHighlight', ACHIEVEMENTS.firstHighlight.emoji, ACHIEVEMENTS.firstHighlight.label);
   } else if (livePathEl){
     livePathEl.remove();
   }
@@ -1464,6 +1690,7 @@ function addNote(text, x, y){
   saveBookState();
   renderSidebarTab();
   renderStickyNotesForPage(state.currentPage);
+  unlockAchievement('firstNote', ACHIEVEMENTS.firstNote.emoji, ACHIEVEMENTS.firstNote.label);
 }
 function deleteItem(type, id){
   state[type] = state[type].filter(i=>i.id!==id);
@@ -1499,7 +1726,7 @@ function startEditingStickyNote(div, n){
   ta.addEventListener('blur', ()=>{
     const val = ta.value.trim();
     if (!val){ state.notes = state.notes.filter(x=>x.id!==n.id); }
-    else { n.text = val; }
+    else { n.text = val; unlockAchievement('firstNote', ACHIEVEMENTS.firstNote.emoji, ACHIEVEMENTS.firstNote.label); }
     saveBookState();
     renderStickyNotesForPage(state.currentPage);
     renderSidebarTab();
@@ -1715,7 +1942,24 @@ el('dropzone').addEventListener('drop', (e)=>{ e.preventDefault(); el('dropzone'
     navigator.serviceWorker.register("/sw.js");
 }
 // init
-checkStorageAvailability().then(renderShelf);
+checkStorageAvailability().then(async ()=>{
+  await checkWelcomeBackMessage();
+  renderShelf();
+});
+async function checkWelcomeBackMessage(){
+  const streak = await loadStreak();
+  const today = todayStr(0);
+  const yesterday = todayStr(-1);
+  if (streak.lastAppOpenDate !== today){
+    if (streak.lastAppOpenDate === yesterday){
+      showToast("Welcome back! Ready for today's adventure? 🌤️");
+    } else if (streak.lastAppOpenDate){
+      showToast("I've missed reading with you 🥺 Let's build our streak again!");
+    }
+    streak.lastAppOpenDate = today;
+    await saveStreak(streak);
+  }
+}
 </script>
 </body>
 </html>
