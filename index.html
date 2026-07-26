@@ -84,7 +84,7 @@
   .spine-marker{position:absolute;left:-2px;right:-4px;height:12px;border-radius:6px;background:var(--butter);box-shadow:0 0 0 2px var(--panel);}
 
   .reader-viewport{flex:1;overflow:auto;display:flex;justify-content:center;padding:28px 16px 100px;position:relative;background:var(--bg);}
-  .page-mat{background:#fff;padding:16px;border-radius:18px;box-shadow:0 10px 0 var(--line), 0 14px 30px rgba(216,120,160,0.18);height:fit-content;}
+  .page-mat{background:#fff;padding:16px;border-radius:18px;box-shadow:0 10px 0 var(--line), 0 14px 30px rgba(216,120,160,0.18);height:fit-content;margin:auto 0;}
   .page-canvas-wrap{position:relative;background:#fff;border-radius:6px;overflow:hidden;}
   canvas{display:block;}
   .textLayer{position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;line-height:1;opacity:1;}
@@ -125,6 +125,7 @@
     position:absolute;min-width:120px;max-width:180px;background:#FFF3AD;border-radius:4px;
     padding:10px 10px 8px;box-shadow:0 3px 8px rgba(0,0,0,0.22);font-family:var(--sans);font-size:12px;
     color:#5C4A1F;line-height:1.4;cursor:move;transform:rotate(-2deg);pointer-events:auto;z-index:10;
+    touch-action:none;
   }
   .sticky-note:nth-child(3n+1){transform:rotate(1.5deg);background:#FFE1EE;color:#7A3A56;}
   .sticky-note:nth-child(3n+2){transform:rotate(-2deg);background:#D9F7EC;color:#215C4A;}
@@ -1157,6 +1158,7 @@ async function goToPage(num, skipSave){
   if (rendering){ pendingPage = num; return; }
   rendering = true;
   const wasFinished = state.celebrated;
+  if (num !== state.currentPage) setZoom(1);
   state.currentPage = num;
   el('pageInput').value = num;
   updateProgressUI();
@@ -1418,16 +1420,28 @@ function renderInkForPage(pageNum){
     const path = document.createElementNS('http://www.w3.org/2000/svg','path');
     path.setAttribute('d', pointsToPathD(s.points));
     applyBrushAttrs(path, s.kind || 'pen');
-    path.style.cursor = 'pointer';
-    path.style.pointerEvents = 'stroke';
-    path.addEventListener('click', ()=>{
+    path.style.pointerEvents = 'none';
+    layer.appendChild(path);
+
+    // Invisible fatter path stacked on top just for hit-testing — pen/underline are
+    // only 3px wide visually, which is why erasing them used to miss almost every tap.
+    const hit = document.createElementNS('http://www.w3.org/2000/svg','path');
+    hit.setAttribute('d', pointsToPathD(s.points));
+    hit.setAttribute('fill', 'none');
+    hit.setAttribute('stroke', 'transparent');
+    hit.setAttribute('stroke-width', Math.max(28, (BRUSH_STYLE[s.kind]||BRUSH_STYLE.pen).width + 16));
+    hit.setAttribute('stroke-linecap', 'round');
+    hit.setAttribute('stroke-linejoin', 'round');
+    hit.style.cursor = 'pointer';
+    hit.style.pointerEvents = 'stroke';
+    hit.addEventListener('click', ()=>{
       if (activeTool !== 'eraser') return;
       state.ink[pageNum] = state.ink[pageNum].filter(x=>x.id!==s.id);
       saveBookState();
       renderInkForPage(pageNum);
       showToast('Removed');
     });
-    layer.appendChild(path);
+    layer.appendChild(hit);
   });
 }
 
@@ -1473,7 +1487,7 @@ function renderStickyNotesForPage(pageNum){
     div.innerHTML = `<button class="sn-del" title="Remove">✕</button><div class="sn-text">${escapeHtml(n.text)}</div>`;
     div.querySelector('.sn-del').addEventListener('click', (e)=>{ e.stopPropagation(); deleteItem('notes', n.id); });
     div.addEventListener('dblclick', (e)=>{ e.stopPropagation(); startEditingStickyNote(div, n); });
-    makeStickyNoteDraggable(div, n);
+    makeStickyNoteDraggable(div, n, ()=> startEditingStickyNote(div, n));
     layer.appendChild(div);
   });
 }
@@ -1491,11 +1505,12 @@ function startEditingStickyNote(div, n){
     renderSidebarTab();
   });
 }
-function makeStickyNoteDraggable(div, n){
-  let dragging = false, startX = 0, startY = 0, origX = 0, origY = 0;
+function makeStickyNoteDraggable(div, n, onDoubleTap){
+  let dragging = false, moved = false, startX = 0, startY = 0, origX = 0, origY = 0;
+  let lastUpTime = 0;
   div.addEventListener('pointerdown', (e)=>{
     if (e.target.closest('.sn-del') || e.target.tagName === 'TEXTAREA') return;
-    dragging = true;
+    dragging = true; moved = false;
     startX = e.clientX; startY = e.clientY;
     origX = n.x || 8; origY = n.y || 6;
     div.setPointerCapture(e.pointerId);
@@ -1504,6 +1519,7 @@ function makeStickyNoteDraggable(div, n){
     if (!dragging) return;
     const rect = el('canvasWrap').getBoundingClientRect();
     if (!rect.width || !rect.height) return;
+    if (Math.abs(e.clientX - startX) > 4 || Math.abs(e.clientY - startY) > 4) moved = true;
     n.x = Math.max(0, Math.min(88, origX + ((e.clientX - startX) / rect.width) * 100));
     n.y = Math.max(0, Math.min(88, origY + ((e.clientY - startY) / rect.height) * 100));
     div.style.left = n.x + '%';
@@ -1512,7 +1528,10 @@ function makeStickyNoteDraggable(div, n){
   div.addEventListener('pointerup', ()=>{
     if (!dragging) return;
     dragging = false;
-    saveBookState();
+    if (moved){ saveBookState(); return; }
+    const now = Date.now();
+    if (now - lastUpTime < 400){ lastUpTime = 0; if (onDoubleTap) onDoubleTap(); }
+    else { lastUpTime = now; }
   });
 }
 function placeAndEditNote(xPct, yPct){
@@ -1604,27 +1623,71 @@ function renderSidebarTab(){
 }
 
 // ---------------- nav controls ----------------
-el('prevBtn').addEventListener('click', ()=> goToPage(state.currentPage - 1));
-el('nextBtn').addEventListener('click', ()=> goToPage(state.currentPage + 1));
-el('pageInput').addEventListener('keydown', (e)=>{ if (e.key==='Enter'){ goToPage(parseInt(e.target.value)||1); e.target.blur(); } });
+el('prevBtn').addEventListener('click', ()=>{ if (isBrushTool(activeTool)) return; goToPage(state.currentPage - 1); });
+el('nextBtn').addEventListener('click', ()=>{ if (isBrushTool(activeTool)) return; goToPage(state.currentPage + 1); });
+el('pageInput').addEventListener('keydown', (e)=>{ if (e.key==='Enter'){ if (!isBrushTool(activeTool)) goToPage(parseInt(e.target.value)||1); e.target.blur(); } });
 document.addEventListener('keydown', (e)=>{
   if (!state) return;
   const tag = (e.target.tagName||'').toLowerCase();
   if (tag==='textarea' || tag==='input') return;
+  if (isBrushTool(activeTool)) return;
   if (e.key==='ArrowRight' || e.key==='PageDown') goToPage(state.currentPage+1);
   if (e.key==='ArrowLeft' || e.key==='PageUp') goToPage(state.currentPage-1);
 });
 
-let touchStartX=0, touchStartY=0;
-el('readerViewport').addEventListener('touchstart', (e)=>{ touchStartX = e.changedTouches[0].clientX; touchStartY = e.changedTouches[0].clientY; });
+let touchStartX=0, touchStartY=0, touchStartTime=0;
+let pdfZoom = 1;
+let pinchActive = false, pinchStartDist = 0, pinchStartZoom = 1;
+let lastTapTime = 0, lastTapX = 0, lastTapY = 0;
+
+function applyZoom(){ el('canvasWrap').style.zoom = pdfZoom; }
+function setZoom(z){ pdfZoom = Math.min(Math.max(z, 1), 3.5); applyZoom(); }
+function pinchDistance(touches){
+  return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+}
+
+el('readerViewport').addEventListener('touchstart', (e)=>{
+  if (e.touches.length === 2){
+    pinchActive = true;
+    pinchStartDist = pinchDistance(e.touches);
+    pinchStartZoom = pdfZoom;
+    return;
+  }
+  touchStartX = e.changedTouches[0].clientX;
+  touchStartY = e.changedTouches[0].clientY;
+  touchStartTime = Date.now();
+}, { passive:true });
+
+el('readerViewport').addEventListener('touchmove', (e)=>{
+  if (pinchActive && e.touches.length === 2){
+    e.preventDefault();
+    setZoom(pinchStartZoom * (pinchDistance(e.touches) / pinchStartDist));
+  }
+}, { passive:false });
+
 el('readerViewport').addEventListener('touchend', (e)=>{
+  if (pinchActive){ if (e.touches.length < 2) pinchActive = false; return; }
+  if (!state) return;
   const dx = e.changedTouches[0].clientX - touchStartX;
   const dy = e.changedTouches[0].clientY - touchStartY;
+  const dist = Math.hypot(dx, dy);
+  const elapsed = Date.now() - touchStartTime;
+
+  if (dist < 12 && elapsed < 300){
+    const now = Date.now();
+    const sameSpot = Math.abs(e.changedTouches[0].clientX - lastTapX) < 40 && Math.abs(e.changedTouches[0].clientY - lastTapY) < 40;
+    if (now - lastTapTime < 350 && sameSpot){ setZoom(pdfZoom > 1 ? 1 : 2); lastTapTime = 0; return; }
+    lastTapTime = now; lastTapX = e.changedTouches[0].clientX; lastTapY = e.changedTouches[0].clientY;
+  }
+
+  // Requirement 4: no swipe-page-turn while a drawing tool is active, or while zoomed in
+  if (isBrushTool(activeTool) || activeTool === 'eraser' || activeTool === 'note') return;
+  if (pdfZoom > 1.05) return;
   if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy)*1.5){ if (dx < 0) goToPage(state.currentPage+1); else goToPage(state.currentPage-1); }
 });
 
 el('spine').addEventListener('click', (e)=>{
-  if (!state) return;
+  if (!state || isBrushTool(activeTool)) return;
   const rect = el('spine').getBoundingClientRect();
   const frac = (e.clientY - rect.top) / rect.height;
   goToPage(Math.round(frac * state.numPages) + 1);
