@@ -64,8 +64,6 @@
     background:var(--panel);border-bottom:2px solid var(--line);flex-shrink:0;z-index:20;
   }
   .brand{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-  #mascotBrand{animation:bob 3.2s ease-in-out infinite;}
-  #mascotBrand svg{display:block;}
   .brand-name{font-family:var(--serif);font-weight:800;font-size:20px;color:var(--pink-dark);}
   .book-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
   .book-title{font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -91,18 +89,70 @@
   .textLayer > span{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%;}
   .textLayer ::selection{background:rgba(255,111,168,0.35);}
 
-  .hl-popup{
-    position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(20px);
-    display:flex;align-items:center;gap:10px;background:#fff;padding:9px 14px;border-radius:24px;
-    box-shadow:0 6px 0 var(--line), 0 10px 24px rgba(0,0,0,0.18);z-index:120;border:2px solid var(--line);
-    opacity:0;pointer-events:none;transition:opacity .18s ease, transform .18s ease;
+  ::highlight(marg-pink){background-color:rgba(255,111,168,0.4);}
+  ::highlight(marg-mint){background-color:rgba(63,203,168,0.4);}
+  ::highlight(marg-sky){background-color:rgba(95,182,242,0.4);}
+  ::highlight(marg-underline){text-decoration:underline;text-decoration-color:#E8508C;text-decoration-thickness:2.5px;text-underline-offset:3px;}
+
+  .ink-layer{position:absolute;left:0;top:0;right:0;bottom:0;pointer-events:none;touch-action:none;}
+  .notes-layer{position:absolute;left:0;top:0;right:0;bottom:0;pointer-events:none;}
+
+  .reader-mascot{
+    position:fixed;bottom:26px;left:26px;width:52px;height:52px;z-index:34;cursor:pointer;
+    filter:drop-shadow(0 4px 6px rgba(0,0,0,0.15));
   }
-  .hl-popup.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
-  .hl-popup-label{font-size:12px;font-weight:800;color:var(--ink-soft);white-space:nowrap;}
-  .hl-swatch{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,0.7);cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,0.12);}
-  .hl-swatch.pink{background:#FF6FA8;}
-  .hl-swatch.mint{background:#3FCBA8;}
-  .hl-swatch.sky{background:#5FB6F2;}
+  .reader-mascot .mascot{width:100%;height:100%;}
+
+  .tool-fab-wrap{position:fixed;bottom:26px;right:26px;z-index:45;display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
+  .tool-fab{position:static;box-shadow:0 6px 0 var(--pink-dark), 0 10px 24px rgba(232,80,140,0.35);font-size:24px;}
+  .tool-fab-badge{
+    position:absolute;top:-3px;right:-3px;width:16px;height:16px;border-radius:50%;border:2px solid #fff;
+  }
+  .tool-menu{
+    display:none;flex-direction:column;gap:8px;background:#fff;padding:10px;border-radius:20px;
+    box-shadow:0 6px 0 var(--line), 0 10px 24px rgba(0,0,0,0.15);border:2px solid var(--line);
+  }
+  .tool-menu.open{display:flex;}
+  .tool-menu-item{
+    display:flex;align-items:center;gap:8px;border:none;background:var(--panel-2);color:var(--ink);
+    border-radius:14px;padding:9px 12px;font-family:var(--sans);font-weight:800;font-size:13px;cursor:pointer;
+    white-space:nowrap;
+  }
+  .tool-menu-item:active{transform:translateY(1px);}
+  .tool-menu-item.tool-color{width:38px;height:38px;padding:0;border-radius:50%;justify-content:center;}
+  .tool-menu-item.tool-color.pink{background:#FF6FA8;}
+  .tool-menu-item.tool-color.mint{background:#3FCBA8;}
+  .tool-menu-item.tool-color.sky{background:#5FB6F2;}
+
+  .sticky-note{
+    position:absolute;min-width:120px;max-width:180px;background:#FFF3AD;border-radius:4px;
+    padding:10px 10px 8px;box-shadow:0 3px 8px rgba(0,0,0,0.22);font-family:var(--sans);font-size:12px;
+    color:#5C4A1F;line-height:1.4;cursor:move;transform:rotate(-2deg);pointer-events:auto;z-index:10;
+  }
+  .sticky-note:nth-child(3n+1){transform:rotate(1.5deg);background:#FFE1EE;color:#7A3A56;}
+  .sticky-note:nth-child(3n+2){transform:rotate(-2deg);background:#D9F7EC;color:#215C4A;}
+  .sticky-note .sn-text{white-space:pre-wrap;word-break:break-word;min-height:18px;}
+  .sticky-note textarea{
+    width:100%;min-height:50px;border:none;background:transparent;font-family:var(--sans);font-size:12px;
+    color:inherit;resize:none;outline:none;
+  }
+  .sticky-note .sn-del{
+    position:absolute;top:2px;right:5px;border:none;background:none;color:inherit;opacity:0.5;
+    cursor:pointer;font-size:11px;padding:2px;
+  }
+  .sticky-note .sn-del:hover{opacity:1;}
+
+  .tool-hint{
+    position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:#3A2E3F;color:#fff;
+    font-size:11.5px;font-weight:700;padding:6px 14px;border-radius:14px;z-index:46;opacity:0;pointer-events:none;transition:opacity .2s ease;
+    white-space:nowrap;
+  }
+  .tool-hint.show{opacity:0.94;}
+
+  @media (max-width: 780px){
+    .tool-fab-wrap{right:16px;bottom:16px;}
+    .reader-mascot{left:16px;bottom:16px;width:44px;height:44px;}
+  }
 
   .page-nav{
     position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;
@@ -127,6 +177,7 @@
   .item-card.pink-b{border-left:5px solid var(--pink);}
   .item-card.mint-b{border-left:5px solid var(--mint);}
   .item-card.sky-b{border-left:5px solid var(--sky);}
+  .item-card.underline-b{border-left:5px solid var(--ink);}
   .item-page{font-size:10px;color:var(--pink-dark);font-weight:800;text-transform:uppercase;letter-spacing:0.4px;}
   .item-text{font-size:12.5px;line-height:1.5;color:var(--ink);margin-top:4px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
   .item-del{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:13px;padding:2px 4px;}
@@ -140,14 +191,29 @@
   .hero{display:flex;align-items:flex-start;gap:16px;margin-bottom:8px;}
   .hero-text h1{font-family:var(--serif);font-size:26px;color:var(--pink-dark);margin:0 0 4px;}
   .hero-text p{margin:0;color:var(--ink-soft);font-size:13px;font-weight:700;}
-  #mascotHero{flex-shrink:0;animation:bob 3.2s ease-in-out infinite;}
+  #mascotHero{flex-shrink:0;}
   @keyframes bob{0%,100%{transform:translateY(0) rotate(-1deg);}50%{transform:translateY(-5px) rotate(1deg);}}
+  @keyframes catBounce{0%,100%{transform:translateY(0) rotate(-1deg);}50%{transform:translateY(-10px) rotate(2deg);}}
+  @keyframes catSway{0%,100%{transform:rotate(-3deg);}50%{transform:rotate(1deg);}}
+  @keyframes sparklePop{0%,100%{opacity:0.5;transform:scale(0.85) rotate(0deg);}50%{opacity:1;transform:scale(1.1) rotate(8deg);}}
+
+  .mascot{position:relative;display:inline-block;}
+  .mascot-img{width:100%;height:100%;display:block;object-fit:contain;user-select:none;-webkit-user-drag:none;filter:drop-shadow(0 3px 0 rgba(0,0,0,0.06));}
+  .mascot.mood-happy{animation:bob 3.2s ease-in-out infinite;}
+  .mascot.mood-worried{animation:catSway 2.6s ease-in-out infinite;}
+  .mascot.mood-sad{animation:none;}
+  .mascot.mood-sad .mascot-img{filter:grayscale(45%) brightness(0.96) drop-shadow(0 3px 0 rgba(0,0,0,0.06));opacity:0.9;transform-origin:50% 100%;}
+  .mascot.mood-celebrate{animation:catBounce 0.7s ease-in-out infinite;}
+  .mascot-prop{position:absolute;font-size:1.4em;line-height:1;pointer-events:none;}
+  .mascot-prop-sparkle{top:-8%;right:-12%;animation:sparklePop 1s ease-in-out infinite;}
+  .mascot-prop-cloud{top:-18%;right:-18%;font-size:1.1em;}
+  .mascot-prop-book{bottom:-6%;left:50%;transform:translateX(-50%);font-size:1em;}
 
   .mood-card{
     display:flex;align-items:center;gap:14px;background:var(--panel);border:2px solid var(--line);
     border-radius:20px;padding:14px 16px;margin:18px 0;box-shadow:0 4px 0 var(--line);
   }
-  .mood-mascot{flex-shrink:0;animation:bob 3.2s ease-in-out infinite;}
+  .mood-mascot{flex-shrink:0;}
   .mood-mascot.sad{animation:none;}
   .bubble{flex:1;min-width:0;}
   .bubble-text{font-size:13px;font-weight:800;color:var(--ink);line-height:1.4;}
@@ -240,7 +306,10 @@
 
   <div class="topbar">
     <div class="brand" id="brandLogo">
-      <div id="mascotBrand" style="cursor:pointer;"></div>
+      <svg width="26" height="26" viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="3" width="22" height="20" rx="5" fill="#FF6FA8"/>
+        <path d="M13 6 L13 20 M13 7.5 C11 6 8 5.5 5.5 6.2 L5.5 18.2 C8 17.5 11 18 13 19.5 M13 7.5 C15 6 18 5.5 20.5 6.2 L20.5 18.2 C18 17.5 15 18 13 19.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
       <span class="brand-name">Marginalia</span>
     </div>
     <div class="book-meta" id="bookMeta" style="display:none;">
@@ -294,6 +363,8 @@
         <div class="page-canvas-wrap" id="canvasWrap">
           <canvas id="pdfCanvas"></canvas>
           <div class="textLayer" id="textLayer"></div>
+          <svg class="ink-layer" id="inkLayer"></svg>
+          <div class="notes-layer" id="notesLayer"></div>
         </div>
       </div>
     </div>
@@ -319,12 +390,28 @@
 
   <button class="fab" id="fabAdd" title="Add a book you want to read">+</button>
 
-  <div class="hl-popup" id="hlPopup">
-    <span class="hl-popup-label">Highlight it:</span>
-    <div class="hl-swatch pink" data-color="pink"></div>
-    <div class="hl-swatch mint" data-color="mint"></div>
-    <div class="hl-swatch sky" data-color="sky"></div>
+  <div class="reader-mascot" id="readerMascot" style="display:none;" title="Your reading buddy"></div>
+
+  <div class="tool-fab-wrap" id="toolFabWrap" style="display:none;">
+    <div class="tool-menu" id="toolMenuColors">
+      <button class="tool-menu-item" data-back title="Back">‹ back</button>
+      <button class="tool-menu-item tool-color pink" data-tool="pink" title="Pink highlighter"></button>
+      <button class="tool-menu-item tool-color mint" data-tool="mint" title="Mint highlighter"></button>
+      <button class="tool-menu-item tool-color sky" data-tool="sky" title="Sky highlighter"></button>
+    </div>
+    <div class="tool-menu" id="toolMenuMain">
+      <button class="tool-menu-item" data-tool="none" title="Just reading — no marking">👆 <span>Just reading</span></button>
+      <button class="tool-menu-item" data-open-colors title="Highlighter — pick a color, then drag over words">🖍️ <span>Highlighter</span></button>
+      <button class="tool-menu-item" data-tool="underline" title="Underline — drag over words">U <span>Underline</span></button>
+      <button class="tool-menu-item" data-tool="pen" title="Pen — draw freely on the page">✎ <span>Pen</span></button>
+      <button class="tool-menu-item" data-tool="note" title="Sticky note — tap the page to place one">📝 <span>Sticky note</span></button>
+      <button class="tool-menu-item" data-tool="eraser" title="Eraser — tap a mark to remove it">🧽 <span>Eraser</span></button>
+    </div>
+    <button class="fab tool-fab" id="toolFab" title="Marking tools">
+      🧰<span class="tool-fab-badge" id="toolFabBadge" style="display:none;"></span>
+    </button>
   </div>
+  <div class="tool-hint" id="toolHint"></div>
 
   <!-- add-to-wishlist modal -->
   <div class="modal-scrim" id="addModalScrim">
@@ -360,51 +447,33 @@
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-// ---------------- mascot (original cute reading bird) ----------------
-function mascotSVG(opts){
+// ---------------- mascot: Marge, a small reading owl ----------------
+// Redesigned as an owl perched on a little open book — reads as a crafted brand
+// mark rather than a generic cartoon, while keeping the four moods.
+const CAT_IMG = "data:image/png;base64,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";
+let __mascotUid = 0;
+function mascotHTML(opts){
   opts = opts || {};
   const size = opts.size || 64;
   const mood = opts.celebrate ? 'celebrate' : (opts.mood || 'happy');
+  const reading = !!opts.reading;
 
-  const wings = {
-    celebrate: '<path d="M14 46 C4 40, 2 26, 10 20" stroke="#B49AF0" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M74 46 C84 40, 86 26, 78 20" stroke="#B49AF0" stroke-width="6" stroke-linecap="round" fill="none"/>',
-    happy:     '<path d="M18 50 C10 52, 6 44, 10 38" stroke="#B49AF0" stroke-width="6" stroke-linecap="round" fill="none"/>',
-    worried:   '<path d="M18 52 C10 55, 7 48, 11 43" stroke="#B49AF0" stroke-width="6" stroke-linecap="round" fill="none"/>',
-    sad:       '<path d="M20 54 C13 59, 11 53, 14 49" stroke="#B49AF0" stroke-width="6" stroke-linecap="round" fill="none"/>'
+  const props = {
+    celebrate: '<span class="mascot-prop mascot-prop-sparkle">✨</span>',
+    happy:     '',
+    worried:   '<span class="mascot-prop mascot-prop-sparkle" style="opacity:.7;">💭</span>',
+    sad:       '<span class="mascot-prop mascot-prop-cloud">☁️</span>'
   };
-  const eyes = {
-    celebrate: '<path d="M32 36 Q36 30 40 36" stroke="#3A2E3F" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M52 36 Q56 30 60 36" stroke="#3A2E3F" stroke-width="3.5" fill="none" stroke-linecap="round"/>',
-    happy:     '<circle cx="35" cy="37" r="4.2" fill="#3A2E3F"/><circle cx="57" cy="37" r="4.2" fill="#3A2E3F"/><circle cx="36.5" cy="35.5" r="1.3" fill="#fff"/><circle cx="58.5" cy="35.5" r="1.3" fill="#fff"/>',
-    worried:   '<path d="M30 34 Q35 38 40 35" stroke="#3A2E3F" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M52 35 Q57 38 62 34" stroke="#3A2E3F" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M29 30 Q35 27 41 29" stroke="#3A2E3F" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M51 29 Q57 27 63 30" stroke="#3A2E3F" stroke-width="2.4" fill="none" stroke-linecap="round"/>',
-    sad:       '<path d="M30 38 Q35 34 40 37" stroke="#3A2E3F" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M52 37 Q57 34 62 38" stroke="#3A2E3F" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M31 30 Q35 33 40 31" stroke="#3A2E3F" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M52 31 Q57 33 61 30" stroke="#3A2E3F" stroke-width="2.4" fill="none" stroke-linecap="round"/>'
-  };
-  const mouth = {
-    celebrate: '<path d="M40 46 L52 46 L46 52 Z" fill="#FFC94D"/>',
-    happy:     '<path d="M40 46 L52 46 L46 52 Z" fill="#FFC94D"/>',
-    worried:   '<path d="M40 48 Q46 46 52 48" stroke="#E8AC1F" stroke-width="3.2" fill="none" stroke-linecap="round"/>',
-    sad:       '<path d="M40 50 Q46 45 52 50" stroke="#E8AC1F" stroke-width="3.2" fill="none" stroke-linecap="round"/>'
-  };
-  const tear = mood === 'sad'
-    ? '<path d="M62 40 Q65 46 62 50 Q59 46 62 40 Z" fill="#5FB6F2" opacity="0.85"/>'
-    : '';
-  const tilt = mood === 'sad' ? 'transform="rotate(-4 46 42)"' : '';
+  const readingProp = reading ? '<span class="mascot-prop mascot-prop-book">📖</span>' : '';
 
-  return `<svg width="${size}" height="${size}" viewBox="0 0 92 78" xmlns="http://www.w3.org/2000/svg">
-    <g ${tilt}>
-    ${wings[mood]}
-    <ellipse cx="46" cy="42" rx="30" ry="27" fill="#5FB6F2"/>
-    <ellipse cx="46" cy="48" rx="19" ry="15" fill="#EAF6FF"/>
-    <path d="M46 20 C40 10, 30 8, 26 14 C34 14, 40 16, 46 24 C52 16, 58 14, 66 14 C62 8, 52 10, 46 20 Z" fill="#5FB6F2"/>
-    ${eyes[mood]}
-    <ellipse cx="27" cy="46" rx="5" ry="3.5" fill="#FF9E7D" opacity="0.7"/>
-    <ellipse cx="65" cy="46" rx="5" ry="3.5" fill="#FF9E7D" opacity="0.7"/>
-    ${mouth[mood]}
-    ${tear}
-    <rect x="26" y="60" width="40" height="9" rx="3" fill="#FF6FA8"/>
-    <rect x="26" y="60" width="40" height="4" rx="2" fill="#FF9EC4"/>
-    </g>
-  </svg>`;
+  return `<div class="mascot mood-${mood}" style="width:${size}px;height:${size}px;">
+    <img class="mascot-img" src="${CAT_IMG}" alt="Marge the reading cat" draggable="false" />
+    ${props[mood] || ''}
+    ${readingProp}
+  </div>`;
 }
+// kept for any old call sites — delegates straight to the new cat mascot
+function mascotSVG(opts){ return mascotHTML(opts); }
 document.getElementById('mascotHero').innerHTML = mascotSVG({ size: 64 });
 document.getElementById('mascotCelebrate').innerHTML = mascotSVG({ size: 72, celebrate: true });
 
@@ -416,6 +485,12 @@ const COVER_COLORS = [
   { key:'butter', hex:'#FFC94D' },
   { key:'peach', hex:'#FF9E7D' }
 ];
+function bookIconSVG(finished){
+  const check = finished
+    ? '<path d="M8 13.5 L11 16.5 L17 9.5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
+    : '<path d="M7 6 L7 19 M7 7.2 C5.5 6.2 3.5 6 2 6.5 L2 17.5 C3.5 17 5.5 17.2 7 18.2 M7 7.2 C8.5 6.2 10.5 6 12 6.5 L12 17.5 C10.5 17 8.5 17.2 7 18.2" transform="translate(2 1) scale(0.85)" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>';
+  return `<svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${check}</svg>`;
+}
 function colorForString(str){
   let h = 0;
   for (let i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) >>> 0; }
@@ -441,6 +516,54 @@ function showToast(msg){
   showToast._t = setTimeout(()=> t.classList.remove('show'), 2200);
 }
 
+// ---------------- storage availability check ----------------
+// The "Couldn't save" that kept happening on EVERY save (not occasionally) usually
+// means window.storage itself isn't available in this viewing context, not that a
+// single request failed. We test it once at startup; if it's broken, we swap in an
+// in-memory shim with the identical interface so the app still works for this
+// session, and we tell the user honestly instead of pretending it saved.
+let PERSIST_OK = true;
+function installMemoryStorageShim(){
+  const mem = {};
+  const k = (key, shared) => (shared ? 'shared:' : 'me:') + key;
+  window.storage = {
+    async get(key, shared){
+      const kk = k(key, shared);
+      if (!(kk in mem)) throw new Error('key not found (in-memory shim)');
+      return { key, value: mem[kk], shared: !!shared };
+    },
+    async set(key, value, shared){ mem[k(key, shared)] = value; return { key, value, shared: !!shared }; },
+    async delete(key, shared){ delete mem[k(key, shared)]; return { key, deleted: true, shared: !!shared }; },
+    async list(prefix, shared){
+      const p = k(prefix || '', shared);
+      const keys = Object.keys(mem).filter(x => x.startsWith(p)).map(x => x.slice(shared ? 7 : 3));
+      return { keys, prefix, shared: !!shared };
+    }
+  };
+}
+function showPersistWarning(){
+  const banner = document.createElement('div');
+  banner.id = 'persistWarning';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:500;background:#3A2E3F;color:#fff;font-family:Nunito,sans-serif;font-size:12.5px;font-weight:700;text-align:center;padding:9px 14px;';
+  banner.innerHTML = "⚠️ This session can't reach saved storage right now — your bookmarks, notes and highlights will disappear if you close or reload this tab. <span style=\"text-decoration:underline;cursor:pointer;\" id=\"dismissPersistWarning\">Dismiss</span>";
+  document.body.prepend(banner);
+  document.getElementById('dismissPersistWarning').addEventListener('click', ()=> banner.remove());
+}
+async function checkStorageAvailability(){
+  try{
+    if (typeof window.storage === 'undefined') throw new Error('window.storage is not defined in this context');
+    const testVal = String(Date.now());
+    await window.storage.set('__marg_boot_check__', testVal, false);
+    const readBack = await window.storage.get('__marg_boot_check__', false);
+    if (!readBack || readBack.value !== testVal) throw new Error('storage did not round-trip correctly');
+  }catch(e){
+    console.warn('Persistent storage unavailable, falling back to in-memory for this session:', e);
+    PERSIST_OK = false;
+    installMemoryStorageShim();
+    showPersistWarning();
+  }
+}
+
 // ---------------- hashing ----------------
 async function hashFile(file){
   try{
@@ -456,103 +579,96 @@ async function hashFile(file){
   }
 }
 
-// ---------------- storage layer (cloud storage when available, localStorage fallback otherwise) ----------------
-// window.storage only exists inside the Claude.ai artifact runtime. When this file is hosted on its
-// own (Vercel, GitHub Pages, etc.) it won't exist, so we fall back to the browser's localStorage —
-// which works great for a single device/browser, just doesn't sync across devices like the cloud one does.
-const LS_PREFIX = 'marginalia:';
-let usingCloudStorage = (typeof window.storage !== 'undefined');
-let cloudStorageWarned = false;
-
-async function dbGet(key){
-  if (usingCloudStorage){
+// ---------------- storage helpers with retry ----------------
+// Storage calls are rate limited server-side. A single burst of page turns used to
+// fire 2-3 uncoalesced storage calls each, which could get throttled and surface as
+// "Couldn't save". Every write now goes through this small retry wrapper.
+async function storageSetWithRetry(key, value, shared, attempts){
+  attempts = attempts || 3;
+  for (let i=0;i<attempts;i++){
     try{
-      const res = await window.storage.get(key, false);
-      return (res && typeof res.value === 'string') ? res.value : null;
+      const res = await window.storage.set(key, value, !!shared);
+      return res;
     }catch(e){
-      if (!cloudStorageWarned){ cloudStorageWarned = true; }
-      // fall through to localStorage this call and future calls
-      usingCloudStorage = false;
+      if (i === attempts-1) throw e;
+      await new Promise(r=> setTimeout(r, 300 * (i+1)));
     }
   }
-  try{ return localStorage.getItem(LS_PREFIX + key); }
-  catch(e){ return null; }
-}
-async function dbSet(key, value){
-  if (usingCloudStorage){
-    try{ await window.storage.set(key, value, false); return true; }
-    catch(e){ usingCloudStorage = false; }
-  }
-  try{ localStorage.setItem(LS_PREFIX + key, value); return true; }
-  catch(e){ return false; }
-}
-async function dbDelete(key){
-  if (usingCloudStorage){
-    try{ await window.storage.delete(key, false); return; }
-    catch(e){ usingCloudStorage = false; }
-  }
-  try{ localStorage.removeItem(LS_PREFIX + key); }catch(e){}
-}
-async function dbListKeys(prefix){
-  if (usingCloudStorage){
-    try{
-      const res = await window.storage.list(prefix, false);
-      return (res && res.keys) ? res.keys : [];
-    }catch(e){ usingCloudStorage = false; }
-  }
-  try{
-    const keys = [];
-    for (let i=0;i<localStorage.length;i++){
-      const k = localStorage.key(i);
-      if (k && k.startsWith(LS_PREFIX + prefix)) keys.push(k.slice(LS_PREFIX.length));
-    }
-    return keys;
-  }catch(e){ return []; }
 }
 
 // ---------------- storage: books ----------------
 async function loadBookState(id){
   try{
-    const val = await dbGet('book:' + id);
-    if (val) return JSON.parse(val);
+    const res = await window.storage.get('book:' + id, false);
+    if (res && res.value) return JSON.parse(res.value);
   }catch(e){}
   return null;
 }
+
+// A lightweight index of every book's shelf-card info, kept as ONE key so the shelf
+// can load with a single storage.get instead of one get() per book.
+async function loadLibraryIndex(){
+  try{
+    const res = await window.storage.get('library-index', false);
+    if (res && res.value) return JSON.parse(res.value);
+  }catch(e){}
+  return {};
+}
+async function saveLibraryIndexEntry(bookKey, summary){
+  const idx = await loadLibraryIndex();
+  idx[bookKey] = summary;
+  try{ await storageSetWithRetry('library-index', JSON.stringify(idx), false); }
+  catch(e){ /* non-fatal, shelf will just be stale until next successful save */ }
+}
+
 let saveTimer = null;
+let saveInFlight = false;
+let saveQueued = false;
 function saveBookState(){
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(async ()=>{
-    if (!currentBookId || !state) return;
-    const ok = await dbSet('book:' + currentBookId, JSON.stringify(state));
-    if (!ok) showToast("Couldn't save");
-  }, 250);
+  saveTimer = setTimeout(flushBookState, 400);
+}
+async function flushBookState(){
+  if (!currentBookId || !state) return;
+  if (saveInFlight){ saveQueued = true; return; }
+  saveInFlight = true;
+  const bookKey = 'book:' + currentBookId;
+  try{
+    await storageSetWithRetry(bookKey, JSON.stringify(state), false);
+    await saveLibraryIndexEntry(bookKey, {
+      key: bookKey, title: state.title, numPages: state.numPages,
+      currentPage: state.currentPage, lastOpened: state.lastOpened
+    });
+  }catch(e){
+    showToast("Couldn't save — will retry");
+  }finally{
+    saveInFlight = false;
+    if (saveQueued){ saveQueued = false; flushBookState(); }
+  }
 }
 async function listLibrary(){
-  try{
-    const keys = await dbListKeys('book:');
-    const items = [];
-    for (const key of keys){
-      try{
-        const val = await dbGet(key);
-        if (val) items.push({ key, ...JSON.parse(val) });
-      }catch(e){}
-    }
-    items.sort((a,b)=> (b.lastOpened||0) - (a.lastOpened||0));
-    return items;
-  }catch(e){ return []; }
+  const idx = await loadLibraryIndex();
+  const items = Object.values(idx);
+  items.sort((a,b)=> (b.lastOpened||0) - (a.lastOpened||0));
+  return items;
 }
 
 // ---------------- storage: wishlist ----------------
 async function loadWishlist(){
   try{
-    const val = await dbGet('wishlist');
-    if (val) return JSON.parse(val);
+    const res = await window.storage.get('wishlist', false);
+    if (res && res.value) return JSON.parse(res.value);
   }catch(e){}
   return [];
 }
 async function saveWishlist(list){
-  const ok = await dbSet('wishlist', JSON.stringify(list));
-  if (!ok) showToast("Couldn't save");
+  try{
+    await storageSetWithRetry('wishlist', JSON.stringify(list), false);
+    return true;
+  }catch(e){
+    showToast("Couldn't save that — check your connection and try again");
+    return false;
+  }
 }
 
 // ---------------- storage: streak ----------------
@@ -564,16 +680,30 @@ function todayStr(offsetDays){
 }
 async function loadStreak(){
   try{
-    const val = await dbGet('streak');
-    if (val) return JSON.parse(val);
+    const res = await window.storage.get('streak', false);
+    if (res && res.value) return JSON.parse(res.value);
   }catch(e){}
   return { currentStreak: 0, longestStreak: 0, lastReadDate: null, history: {}, goalPages: 10 };
 }
 async function saveStreak(streak){
-  await dbSet('streak', JSON.stringify(streak));
+  try{ await storageSetWithRetry('streak', JSON.stringify(streak), false); }
+  catch(e){ /* silent, non-critical */ }
 }
-// called whenever the reader turns a page — updates streak + today's page tally
-async function recordReadingActivity(){
+
+// Page turns happen fast — flipping through a chapter used to fire a get+set to the
+// streak key on EVERY single page. That's now batched in memory and flushed on the
+// same debounce as the book save, so a quick flip-through costs one write, not N.
+let pendingPageIncrements = 0;
+let streakFlushTimer = null;
+function queueReadingActivity(){
+  pendingPageIncrements += 1;
+  clearTimeout(streakFlushTimer);
+  streakFlushTimer = setTimeout(flushReadingActivity, 400);
+}
+async function flushReadingActivity(){
+  const inc = pendingPageIncrements;
+  pendingPageIncrements = 0;
+  if (inc <= 0) return;
   const streak = await loadStreak();
   const today = todayStr(0);
   const yesterday = todayStr(-1);
@@ -583,12 +713,12 @@ async function recordReadingActivity(){
     streak.lastReadDate = today;
   }
   streak.history = streak.history || {};
-  streak.history[today] = (streak.history[today]||0) + 1;
-  // keep only the last 30 days of history
+  streak.history[today] = (streak.history[today]||0) + inc;
   const keys = Object.keys(streak.history).sort();
   if (keys.length > 30){ keys.slice(0, keys.length-30).forEach(k=> delete streak.history[k]); }
   await saveStreak(streak);
-  return streak;
+  if (el('moodCard') && el('shelfView').style.display !== 'none') renderMoodCard();
+  updateReaderMascot();
 }
 
 function timeAgo(ts){
@@ -606,7 +736,25 @@ function timeAgo(ts){
 function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
 // ---------------- shelf rendering ----------------
-async function getMoodInfo(){
+async function updateReaderMascot(){
+  const bubble = el('readerMascot');
+  if (!bubble || bubble.style.display === 'none') return;
+  const streak = await loadStreak();
+  const today = todayStr(0);
+  const yesterday = todayStr(-1);
+  let mood = 'happy';
+  if (streak.lastReadDate === today) mood = 'happy';
+  else if (streak.lastReadDate === yesterday && streak.currentStreak > 0) mood = 'worried';
+  else if (streak.currentStreak > 0 || streak.lastReadDate) mood = 'sad';
+  bubble.innerHTML = mascotHTML({ size: bubble.clientWidth || 52, mood, reading: true });
+  bubble.onclick = ()=>{
+    const goal = streak.goalPages || 10;
+    const pagesToday = (streak.history && streak.history[today]) || 0;
+    showToast(`🔥 ${streak.currentStreak||0} day streak · ${pagesToday}/${goal} pages today`);
+  };
+}
+
+async function renderMoodCard(){
   const streak = await loadStreak();
   const today = todayStr(0);
   const yesterday = todayStr(-1);
@@ -627,20 +775,6 @@ async function getMoodInfo(){
     mood = 'happy';
     message = `Ready to start your first reading streak? 🐣`;
   }
-  return { streak, mood, message, today };
-}
-
-async function renderBrandMascot(){
-  const { mood, streak, message } = await getMoodInfo();
-  const holder = el('mascotBrand');
-  holder.innerHTML = mascotSVG({ size: 30, mood });
-  holder.title = message + (streak.currentStreak ? ` (${streak.currentStreak} day streak)` : '');
-  holder.onclick = ()=> showToast(message);
-}
-
-async function renderMoodCard(){
-  const { streak, mood, message, today } = await getMoodInfo();
-  renderBrandMascot();
 
   const goal = streak.goalPages || 10;
   const pagesToday = (streak.history && streak.history[today]) || 0;
@@ -715,7 +849,10 @@ async function renderShelf(){
     if (delBtn) delBtn.addEventListener('click', async (e)=>{
       e.stopPropagation();
       if (!confirm("Remove this book's bookmarks, notes and highlights? This can't be undone.")) return;
-      try{ await dbDelete(b.key); }catch(err){}
+      try{ await window.storage.delete(b.key, false); }catch(err){}
+      const idx = await loadLibraryIndex();
+      delete idx[b.key];
+      await storageSetWithRetry('library-index', JSON.stringify(idx), false).catch(()=>{});
       renderShelf();
     });
   });
@@ -745,7 +882,7 @@ function bookCardHtml(b, kind){
   const color = colorForString(b.title||'');
   const badge = kind==='finished' ? '<span class="finished-badge">🏆</span>' : '';
   return `<div class="book-card" data-book-key="${b.key}">
-    <div class="book-cover" style="background:${color};">📕</div>
+    <div class="book-cover" style="background:${color};">${bookIconSVG(kind==='finished')}</div>
     <div class="book-card-body">
       <div class="book-card-title">${escapeHtml(b.title||'Untitled PDF')}</div>
       <div class="book-card-sub">Page ${b.currentPage||1} of ${b.numPages||'?'} · ${timeAgo(b.lastOpened)}</div>
@@ -760,7 +897,7 @@ function bookCardHtml(b, kind){
 
 function wishlistCardHtml(w){
   return `<div class="book-card" data-wish-id="${w.id}">
-    <div class="book-cover" style="background:${w.color||'#FF6FA8'};">📘</div>
+    <div class="book-cover" style="background:${w.color||'#FF6FA8'};">${bookIconSVG(false)}</div>
     <div class="book-card-body">
       <div class="book-card-title">${escapeHtml(w.title)}</div>
       <div class="book-card-sub">${w.author ? escapeHtml(w.author) + ' · ' : ''}added ${timeAgo(w.addedAt)}</div>
@@ -794,10 +931,14 @@ el('addModalScrim').addEventListener('click', (e)=>{ if (e.target===el('addModal
 el('wlSave').addEventListener('click', async ()=>{
   const title = el('wlTitle').value.trim();
   if (!title){ showToast('Give it a title first'); return; }
+  const saveBtn = el('wlSave');
+  saveBtn.disabled = true;
   const author = el('wlAuthor').value.trim();
   const list = await loadWishlist();
   list.unshift({ id: 'w'+Date.now(), title, author, color: selectedColor, addedAt: Date.now() });
-  await saveWishlist(list);
+  const ok = await saveWishlist(list);
+  saveBtn.disabled = false;
+  if (!ok) return; // keep the modal open with their input intact so nothing is lost
   el('addModalScrim').classList.remove('show');
   showToast('Added to your shelf 🌸');
   renderShelf();
@@ -807,35 +948,43 @@ el('wlSave').addEventListener('click', async ()=>{
 async function openFile(file){
   if (!file || file.type !== 'application/pdf'){ showToast('That\u2019s not a PDF — try again?'); return; }
   el('loadingNote').textContent = 'Reading ' + file.name + ' …';
-  const { id, buf } = await hashFile(file);
-  currentBookId = id;
+  try{
+    const { id, buf } = await hashFile(file);
+    currentBookId = id;
 
-  const existing = await loadBookState(id);
-  const loadingTask = pdfjsLib.getDocument({ data: buf.slice(0) });
-  pdfDoc = await loadingTask.promise;
+    const existing = await loadBookState(id);
+    const loadingTask = pdfjsLib.getDocument({ data: buf.slice(0) });
+    pdfDoc = await loadingTask.promise;
 
-  state = existing || {
-    title: file.name, numPages: pdfDoc.numPages, currentPage: 1,
-    bookmarks: [], notes: [], highlights: [], celebrated: false, halfCelebrated: false
-  };
-  state.title = file.name;
-  state.numPages = pdfDoc.numPages;
-  state.lastOpened = Date.now();
-  if (!state.currentPage || state.currentPage > pdfDoc.numPages) state.currentPage = 1;
-  if (typeof state.celebrated !== 'boolean') state.celebrated = false;
-  if (typeof state.halfCelebrated !== 'boolean') state.halfCelebrated = false;
+    state = existing || {
+      title: file.name, numPages: pdfDoc.numPages, currentPage: 1,
+      bookmarks: [], notes: [], highlights: [], ink: {}, celebrated: false, halfCelebrated: false
+    };
+    state.title = file.name;
+    state.numPages = pdfDoc.numPages;
+    state.lastOpened = Date.now();
+    if (!state.currentPage || state.currentPage > pdfDoc.numPages) state.currentPage = 1;
+    if (typeof state.celebrated !== 'boolean') state.celebrated = false;
+    if (typeof state.halfCelebrated !== 'boolean') state.halfCelebrated = false;
+    if (!state.ink) state.ink = {};
 
-  saveBookState();
-  el('loadingNote').textContent = '';
+    await flushBookState();
+    el('loadingNote').textContent = '';
 
-  if (pendingWishlistId){
-    const list = await loadWishlist();
-    await saveWishlist(list.filter(x=>x.id!==pendingWishlistId));
-    pendingWishlistId = null;
+    if (pendingWishlistId){
+      const list = await loadWishlist();
+      await saveWishlist(list.filter(x=>x.id!==pendingWishlistId));
+      pendingWishlistId = null;
+    }
+
+    enterReader();
+    goToPage(state.currentPage, true);
+  }catch(e){
+    console.error('openFile failed:', e);
+    el('loadingNote').textContent = '';
+    pdfDoc = null; state = null; currentBookId = null;
+    showToast('Could not open that PDF — it may be corrupted or password-protected');
   }
-
-  enterReader();
-  goToPage(state.currentPage, true);
 }
 
 function enterReader(){
@@ -847,6 +996,9 @@ function enterReader(){
   el('pageNav').style.display = 'flex';
   el('bookMeta').style.display = 'flex';
   el('libraryBtn').style.display = 'inline-flex';
+  el('toolFabWrap').style.display = 'flex';
+  el('readerMascot').style.display = 'block';
+  updateReaderMascot();
   el('bookTitleLabel').textContent = state.title;
   el('numPagesLabel').textContent = state.numPages;
   renderSidebarTab();
@@ -861,6 +1013,10 @@ function returnToShelf(){
   el('pageNav').style.display = 'none';
   el('bookMeta').style.display = 'none';
   el('libraryBtn').style.display = 'none';
+  el('toolFabWrap').style.display = 'none';
+  el('readerMascot').style.display = 'none';
+  closeToolMenus();
+  setActiveTool('none');
   el('shelfView').style.display = 'flex';
   el('fabAdd').style.display = 'flex';
   pdfDoc = null; state = null; currentBookId = null;
@@ -909,12 +1065,20 @@ async function goToPage(num, skipSave){
     if (task && task.promise) await task.promise;
 
     reapplyHighlightsForPage(num, textLayerDiv);
+
+    const inkLayer = el('inkLayer');
+    inkLayer.setAttribute('width', viewport.width);
+    inkLayer.setAttribute('height', viewport.height);
+    inkLayer.style.width = viewport.width + 'px';
+    inkLayer.style.height = viewport.height + 'px';
+    renderInkForPage(num);
+    renderStickyNotesForPage(num);
   }catch(e){
     console.error(e);
     showToast('Could not render this page');
   }
 
-  if (!skipSave){ saveBookState(); recordReadingActivity().then(renderBrandMascot); }
+  if (!skipSave){ saveBookState(); queueReadingActivity(); }
   updateSpine();
   renderSidebarTab();
 
@@ -966,9 +1130,14 @@ function launchCelebration(){
 }
 el('celebrateClose').addEventListener('click', ()=> el('celebrateScrim').classList.remove('show'));
 
-// ---------------- highlights ----------------
+// ---------------- highlights & underline ----------------
+// Uses the CSS Custom Highlight API. Supported: Chrome/Edge 105+, Safari 17.2+.
+// Firefox does not support it yet — we detect that and fall back to inline <mark>-style
+// spans wrapped around the actual DOM range so it still works everywhere.
+const HL_SUPPORTED = typeof CSS !== 'undefined' && 'highlights' in CSS;
+
 function getHighlightObj(color){
-  if (!('highlights' in CSS)) return null;
+  if (!HL_SUPPORTED) return null;
   if (!cssHighlightsMap[color]){
     const hl = new Highlight();
     CSS.highlights.set('marg-' + color, hl);
@@ -998,12 +1167,40 @@ function findRangeForText(container, text){
 }
 function reapplyHighlightsForPage(pageNum, textLayerDiv){
   clearHighlightRanges();
+  // clear any fallback <span> wrappers from a previous render of this page
+  textLayerDiv.querySelectorAll('.marg-fallback-mark').forEach(m=>{
+    const parent = m.parentNode;
+    while (m.firstChild) parent.insertBefore(m.firstChild, m);
+    parent.removeChild(m);
+  });
   (state.highlights||[]).filter(h => h.page === pageNum).forEach(h=>{
     const range = findRangeForText(textLayerDiv, h.text);
-    if (range){ const hlObj = getHighlightObj(h.color); if (hlObj) hlObj.add(range); }
+    if (!range) return;
+    if (HL_SUPPORTED){
+      const hlObj = getHighlightObj(h.color);
+      if (hlObj) hlObj.add(range);
+    } else {
+      applyFallbackMark(range, h.color);
+    }
   });
 }
-function addHighlightFromSelection(color){
+function applyFallbackMark(range, color){
+  try{
+    const mark = document.createElement('span');
+    mark.className = 'marg-fallback-mark';
+    if (color === 'underline'){
+      mark.style.textDecoration = 'underline';
+      mark.style.textDecorationColor = '#E8508C';
+      mark.style.textDecorationThickness = '2.5px';
+    } else {
+      const bg = color==='pink' ? 'rgba(255,111,168,0.4)' : color==='mint' ? 'rgba(63,203,168,0.4)' : 'rgba(95,182,242,0.4)';
+      mark.style.backgroundColor = bg;
+      mark.style.borderRadius = '2px';
+    }
+    range.surroundContents(mark);
+  }catch(e){ /* range spans multiple elements — CSS Highlight API path handles that case; fallback just skips it */ }
+}
+function commitHighlightFromSelection(color){
   const sel = window.getSelection();
   if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
   const text = sel.toString().trim();
@@ -1011,35 +1208,250 @@ function addHighlightFromSelection(color){
   const range = sel.getRangeAt(0).cloneRange();
   const id = 'h' + Date.now() + Math.random().toString(36).slice(2,7);
   state.highlights.push({ id, page: state.currentPage, text, color, createdAt: Date.now() });
-  const hlObj = getHighlightObj(color);
-  if (hlObj) hlObj.add(range);
+  if (HL_SUPPORTED){
+    const hlObj = getHighlightObj(color);
+    if (hlObj) hlObj.add(range);
+  } else {
+    applyFallbackMark(range, color);
+  }
   sel.removeAllRanges();
-  hideHlPopup();
   saveBookState();
   if (activeTab === 'highlights') renderSidebarTab();
 }
-function hideHlPopup(){ el('hlPopup').classList.remove('show'); }
+function eraseHighlightsInSelection(sel){
+  const text = sel.toString().trim();
+  if (!text) return;
+  const before = state.highlights.length;
+  state.highlights = state.highlights.filter(h=>{
+    if (h.page !== state.currentPage) return true;
+    return !(text.includes(h.text) || h.text.includes(text));
+  });
+  sel.removeAllRanges();
+  if (state.highlights.length !== before){
+    reapplyHighlightsForPage(state.currentPage, el('textLayer'));
+    saveBookState();
+    if (activeTab === 'highlights') renderSidebarTab();
+  }
+}
 
-let selCheckTimer = null;
-document.addEventListener('selectionchange', ()=>{
+// ---------------- tool FAB: tap to open a menu, pick a tool, then mark the page ----------------
+let activeTool = 'none';
+const TOOL_BADGE_COLOR = { pink:'#FF6FA8', mint:'#3FCBA8', sky:'#5FB6F2', underline:'#3A2E3F', pen:'#3A2E3F', note:'#FFC94D', eraser:'#8B7A93' };
+function showToolHint(msg){
+  const hint = el('toolHint');
+  hint.textContent = msg;
+  hint.classList.add('show');
+  clearTimeout(showToolHint._t);
+  showToolHint._t = setTimeout(()=> hint.classList.remove('show'), 1800);
+}
+function closeToolMenus(){
+  el('toolMenuMain').classList.remove('open');
+  el('toolMenuColors').classList.remove('open');
+}
+function setActiveTool(tool){
+  activeTool = tool;
+  const textLayer = el('textLayer');
+  const inkLayer = el('inkLayer');
+  const notesLayer = el('notesLayer');
+  inkLayer.style.pointerEvents = 'none';
+  notesLayer.style.pointerEvents = 'none';
+  textLayer.style.pointerEvents = 'auto';
+
+  if (tool === 'pen'){
+    inkLayer.style.pointerEvents = 'auto';
+    textLayer.style.pointerEvents = 'none';
+    showToolHint('Draw on the page ✎');
+  } else if (tool === 'note'){
+    notesLayer.style.pointerEvents = 'auto';
+    textLayer.style.pointerEvents = 'none';
+    showToolHint('Tap anywhere on the page to stick a note');
+  } else if (tool === 'eraser'){
+    inkLayer.style.pointerEvents = 'auto';
+    showToolHint('Tap a highlight or pen mark to remove it (notes have their own × )');
+  } else if (tool === 'none'){
+    showToolHint('');
+  } else {
+    showToolHint(tool === 'underline' ? 'Drag over words to underline' : 'Drag over words to highlight');
+  }
+
+  const badge = el('toolFabBadge');
+  if (tool === 'none'){ badge.style.display = 'none'; }
+  else { badge.style.display = 'block'; badge.style.background = TOOL_BADGE_COLOR[tool] || '#3A2E3F'; }
+}
+document.getElementById('toolFab').addEventListener('click', ()=>{
+  const isOpen = el('toolMenuMain').classList.contains('open') || el('toolMenuColors').classList.contains('open');
+  if (isOpen){ closeToolMenus(); return; }
+  el('toolMenuColors').classList.remove('open');
+  el('toolMenuMain').classList.add('open');
+});
+document.getElementById('toolMenuMain').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.tool-menu-item');
+  if (!btn) return;
+  if (btn.dataset.openColors !== undefined){
+    el('toolMenuMain').classList.remove('open');
+    el('toolMenuColors').classList.add('open');
+    return;
+  }
+  setActiveTool(btn.dataset.tool);
+  closeToolMenus();
+});
+document.getElementById('toolMenuColors').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.tool-menu-item');
+  if (!btn) return;
+  if (btn.dataset.back !== undefined){
+    el('toolMenuColors').classList.remove('open');
+    el('toolMenuMain').classList.add('open');
+    return;
+  }
+  setActiveTool(btn.dataset.tool);
+  closeToolMenus();
+});
+document.addEventListener('click', (e)=>{
+  if (!el('toolFabWrap').contains(e.target)) closeToolMenus();
+});
+
+function caretRangeAt(x, y){
+  if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y);
+  if (document.caretPositionFromPoint){
+    const pos = document.caretPositionFromPoint(x, y);
+    if (!pos) return null;
+    const r = document.createRange();
+    r.setStart(pos.offsetNode, pos.offset);
+    r.collapse(true);
+    return r;
+  }
+  return null;
+}
+function orderedRange(a, b){
+  const r = document.createRange();
+  if (a.compareBoundaryPoints(Range.START_TO_START, b) <= 0){
+    r.setStart(a.startContainer, a.startOffset);
+    r.setEnd(b.startContainer, b.startOffset);
+  } else {
+    r.setStart(b.startContainer, b.startOffset);
+    r.setEnd(a.startContainer, a.startOffset);
+  }
+  return r;
+}
+
+let markDragging = false;
+let markAnchor = null;
+function markPointerDown(e){
   if (!pdfDoc) return;
-  clearTimeout(selCheckTimer);
-  selCheckTimer = setTimeout(()=>{
-    const sel = window.getSelection();
-    const textLayer = el('textLayer');
-    const sidebarOpen = window.innerWidth <= 780 && el('sidebar').classList.contains('open');
-    if (!sel || sel.isCollapsed || !sel.toString().trim() || !textLayer.contains(sel.anchorNode) || sidebarOpen){
-      hideHlPopup();
-      return;
-    }
-    el('hlPopup').classList.add('show');
-  }, 150);
-});
-document.querySelectorAll('.hl-swatch').forEach(sw=>{
-  sw.addEventListener('mousedown', ev=> ev.preventDefault());
-  sw.addEventListener('click', ()=> addHighlightFromSelection(sw.dataset.color));
-});
-document.addEventListener('mousedown', (e)=>{ if (!el('hlPopup').contains(e.target) && !el('textLayer').contains(e.target)) hideHlPopup(); });
+  if (activeTool === 'none' || activeTool === 'pen' || activeTool === 'note') return;
+  const point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+  const anchor = caretRangeAt(point.clientX, point.clientY);
+  if (!anchor) return;
+  markDragging = true;
+  markAnchor = anchor;
+  window.getSelection().removeAllRanges();
+  e.preventDefault();
+}
+function markPointerMove(e){
+  if (!markDragging) return;
+  const point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+  const current = caretRangeAt(point.clientX, point.clientY);
+  if (!current) return;
+  const range = orderedRange(markAnchor, current);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  try{ sel.addRange(range); }catch(err){}
+  e.preventDefault();
+}
+function markPointerUp(){
+  if (!markDragging) return;
+  markDragging = false;
+  markAnchor = null;
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed || !sel.toString().trim()) return;
+  if (activeTool === 'eraser'){ eraseHighlightsInSelection(sel); }
+  else { commitHighlightFromSelection(activeTool); }
+}
+const textLayerNode = () => el('textLayer');
+textLayerNode().addEventListener('mousedown', markPointerDown);
+document.addEventListener('mousemove', markPointerMove);
+document.addEventListener('mouseup', markPointerUp);
+textLayerNode().addEventListener('touchstart', markPointerDown, { passive:false });
+textLayerNode().addEventListener('touchmove', markPointerMove, { passive:false });
+textLayerNode().addEventListener('touchend', markPointerUp);
+
+// ---------------- freehand pen: real ink strokes drawn straight on the page ----------------
+function pointsToPathD(points){
+  if (!points.length) return '';
+  let d = `M ${points[0][0].toFixed(1)} ${points[0][1].toFixed(1)}`;
+  for (let i=1;i<points.length;i++) d += ` L ${points[i][0].toFixed(1)} ${points[i][1].toFixed(1)}`;
+  return d;
+}
+function penColorHex(){ return '#3A2E3F'; }
+let inkDrawing = false, inkPoints = [], livePathEl = null;
+const inkLayerEl = () => el('inkLayer');
+function getInkPoint(e){
+  const rect = inkLayerEl().getBoundingClientRect();
+  const t = e.touches && e.touches[0] ? e.touches[0] : e;
+  return [t.clientX - rect.left, t.clientY - rect.top];
+}
+function inkPointerDown(e){
+  if (activeTool !== 'pen') return;
+  inkDrawing = true;
+  inkPoints = [getInkPoint(e)];
+  livePathEl = document.createElementNS('http://www.w3.org/2000/svg','path');
+  livePathEl.setAttribute('fill','none');
+  livePathEl.setAttribute('stroke', penColorHex());
+  livePathEl.setAttribute('stroke-width','3');
+  livePathEl.setAttribute('stroke-linecap','round');
+  livePathEl.setAttribute('stroke-linejoin','round');
+  inkLayerEl().appendChild(livePathEl);
+  e.preventDefault();
+}
+function inkPointerMove(e){
+  if (!inkDrawing) return;
+  inkPoints.push(getInkPoint(e));
+  if (livePathEl) livePathEl.setAttribute('d', pointsToPathD(inkPoints));
+  e.preventDefault();
+}
+function inkPointerUp(){
+  if (!inkDrawing) return;
+  inkDrawing = false;
+  if (inkPoints.length >= 2){
+    const id = 'k' + Date.now() + Math.random().toString(36).slice(2,6);
+    state.ink = state.ink || {};
+    state.ink[state.currentPage] = state.ink[state.currentPage] || [];
+    state.ink[state.currentPage].push({ id, points: inkPoints });
+    saveBookState();
+  } else if (livePathEl){
+    livePathEl.remove();
+  }
+  livePathEl = null;
+  inkPoints = [];
+}
+el('inkLayer').addEventListener('mousedown', inkPointerDown);
+document.addEventListener('mousemove', inkPointerMove);
+document.addEventListener('mouseup', inkPointerUp);
+el('inkLayer').addEventListener('touchstart', inkPointerDown, { passive:false });
+el('inkLayer').addEventListener('touchmove', inkPointerMove, { passive:false });
+el('inkLayer').addEventListener('touchend', inkPointerUp);
+function renderInkForPage(pageNum){
+  const layer = inkLayerEl();
+  layer.innerHTML = '';
+  const strokes = (state.ink && state.ink[pageNum]) || [];
+  strokes.forEach(s=>{
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', pointsToPathD(s.points));
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke', penColorHex());
+    path.setAttribute('stroke-width','3');
+    path.setAttribute('stroke-linecap','round');
+    path.setAttribute('stroke-linejoin','round');
+    path.style.cursor = 'pointer';
+    path.addEventListener('click', ()=>{
+      if (activeTool !== 'eraser') return;
+      state.ink[pageNum] = state.ink[pageNum].filter(x=>x.id!==s.id);
+      saveBookState();
+      renderInkForPage(pageNum);
+    });
+    layer.appendChild(path);
+  });
+}
 
 // ---------------- bookmarks & notes ----------------
 function isBookmarked(page){ return (state.bookmarks||[]).some(b=>b.page===page); }
@@ -1052,20 +1464,97 @@ function toggleBookmark(){
   saveBookState();
   renderSidebarTab();
 }
-function addNote(text){
+function addNote(text, x, y){
   text = text.trim();
   if (!text) return;
-  state.notes.push({ id: 'n'+Date.now(), page: state.currentPage, text, createdAt: Date.now() });
+  state.notes.push({ id: 'n'+Date.now(), page: state.currentPage, text, x: (x!=null?x:46), y: (y!=null?y:6), createdAt: Date.now() });
   state.notes.sort((a,b)=>a.page-b.page);
   saveBookState();
   renderSidebarTab();
+  renderStickyNotesForPage(state.currentPage);
 }
 function deleteItem(type, id){
   state[type] = state[type].filter(i=>i.id!==id);
   saveBookState();
   if (type==='highlights') reapplyHighlightsForPage(state.currentPage, el('textLayer'));
+  if (type==='notes') renderStickyNotesForPage(state.currentPage);
   renderSidebarTab();
 }
+
+// ---------------- sticky notes: placed right on the page, like real sticky notes ----------------
+function renderStickyNotesForPage(pageNum){
+  const layer = el('notesLayer');
+  layer.innerHTML = '';
+  const notes = (state.notes || []).filter(n => n.page === pageNum);
+  notes.forEach((n, i)=>{
+    if (n.x == null) n.x = 8 + (i * 7) % 60;
+    if (n.y == null) n.y = 6 + (i * 9) % 60;
+    const div = document.createElement('div');
+    div.className = 'sticky-note';
+    div.style.left = n.x + '%';
+    div.style.top = n.y + '%';
+    div.innerHTML = `<button class="sn-del" title="Remove">✕</button><div class="sn-text">${escapeHtml(n.text)}</div>`;
+    div.querySelector('.sn-del').addEventListener('click', (e)=>{ e.stopPropagation(); deleteItem('notes', n.id); });
+    div.addEventListener('dblclick', (e)=>{ e.stopPropagation(); startEditingStickyNote(div, n); });
+    makeStickyNoteDraggable(div, n);
+    layer.appendChild(div);
+  });
+}
+function startEditingStickyNote(div, n){
+  div.innerHTML = `<textarea>${escapeHtml(n.text)}</textarea>`;
+  const ta = div.querySelector('textarea');
+  ta.focus();
+  ta.addEventListener('pointerdown', ev=> ev.stopPropagation());
+  ta.addEventListener('blur', ()=>{
+    const val = ta.value.trim();
+    if (!val){ state.notes = state.notes.filter(x=>x.id!==n.id); }
+    else { n.text = val; }
+    saveBookState();
+    renderStickyNotesForPage(state.currentPage);
+    renderSidebarTab();
+  });
+}
+function makeStickyNoteDraggable(div, n){
+  let dragging = false, startX = 0, startY = 0, origX = 0, origY = 0;
+  div.addEventListener('pointerdown', (e)=>{
+    if (e.target.closest('.sn-del') || e.target.tagName === 'TEXTAREA') return;
+    dragging = true;
+    startX = e.clientX; startY = e.clientY;
+    origX = n.x || 8; origY = n.y || 6;
+    div.setPointerCapture(e.pointerId);
+  });
+  div.addEventListener('pointermove', (e)=>{
+    if (!dragging) return;
+    const rect = el('canvasWrap').getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    n.x = Math.max(0, Math.min(88, origX + ((e.clientX - startX) / rect.width) * 100));
+    n.y = Math.max(0, Math.min(88, origY + ((e.clientY - startY) / rect.height) * 100));
+    div.style.left = n.x + '%';
+    div.style.top = n.y + '%';
+  });
+  div.addEventListener('pointerup', ()=>{
+    if (!dragging) return;
+    dragging = false;
+    saveBookState();
+  });
+}
+function placeAndEditNote(xPct, yPct){
+  const id = 'n' + Date.now() + Math.random().toString(36).slice(2,6);
+  const n = { id, page: state.currentPage, text: '', x: xPct, y: yPct, createdAt: Date.now() };
+  state.notes.push(n);
+  renderStickyNotesForPage(state.currentPage);
+  const divs = el('notesLayer').querySelectorAll('.sticky-note');
+  const div = divs[divs.length - 1];
+  if (div) startEditingStickyNote(div, n);
+}
+el('notesLayer').addEventListener('click', (e)=>{
+  if (activeTool !== 'note') return;
+  if (e.target.closest('.sticky-note')) return;
+  const rect = el('canvasWrap').getBoundingClientRect();
+  const x = Math.max(0, Math.min(85, ((e.clientX - rect.left) / rect.width) * 100));
+  const y = Math.max(0, Math.min(85, ((e.clientY - rect.top) / rect.height) * 100));
+  placeAndEditNote(x, y);
+});
 
 // ---------------- sidebar ----------------
 document.querySelectorAll('.sidebar-tab').forEach(tab=>{
@@ -1076,6 +1565,9 @@ document.querySelectorAll('.sidebar-tab').forEach(tab=>{
     renderSidebarTab();
   });
 });
+function highlightBorderClass(color){
+  return color==='pink' ? 'pink-b' : color==='mint' ? 'mint-b' : color==='sky' ? 'sky-b' : 'underline-b';
+}
 function renderSidebarTab(){
   if (!state) return;
   const body = el('sidebarBody');
@@ -1101,8 +1593,8 @@ function renderSidebarTab(){
   }
   else if (activeTab === 'highlights'){
     let html = '';
-    if (!state.highlights.length){ html = '<div class="empty-hint">No highlights yet. Select text on the page and pick a color.</div>'; }
-    else { state.highlights.forEach(h=>{ html += `<div class="item-card ${h.color}-b" data-page="${h.page}"><div class="item-page">Page ${h.page}</div><div class="item-text">${escapeHtml(h.text)}</div><button class="item-del" data-del="highlights" data-id="${h.id}">✕</button></div>`; }); }
+    if (!state.highlights.length){ html = '<div class="empty-hint">No highlights yet. Select text on the page and pick a color, or the U button to underline.</div>'; }
+    else { state.highlights.forEach(h=>{ html += `<div class="item-card ${highlightBorderClass(h.color)}" data-page="${h.page}"><div class="item-page">Page ${h.page}</div><div class="item-text">${escapeHtml(h.text)}</div><button class="item-del" data-del="highlights" data-id="${h.id}">✕</button></div>`; }); }
     body.innerHTML = html;
     body.querySelectorAll('.item-card').forEach(c=> c.addEventListener('click', (e)=>{ if(e.target.closest('.item-del')) return; goToPage(parseInt(c.dataset.page)); }));
     body.querySelectorAll('[data-del="highlights"]').forEach(btn=> btn.addEventListener('click', (e)=>{ e.stopPropagation(); deleteItem('highlights', btn.dataset.id); }));
@@ -1155,7 +1647,7 @@ el('dropzone').addEventListener('dragleave', ()=> el('dropzone').classList.remov
 el('dropzone').addEventListener('drop', (e)=>{ e.preventDefault(); el('dropzone').classList.remove('drag'); if (e.dataTransfer.files[0]) openFile(e.dataTransfer.files[0]); });
 
 // init
-renderShelf();
+checkStorageAvailability().then(renderShelf);
 </script>
 </body>
 </html>
