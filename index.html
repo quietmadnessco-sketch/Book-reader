@@ -64,6 +64,8 @@
     background:var(--panel);border-bottom:2px solid var(--line);flex-shrink:0;z-index:20;
   }
   .brand{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  #mascotBrand{animation:bob 3.2s ease-in-out infinite;}
+  #mascotBrand svg{display:block;}
   .brand-name{font-family:var(--serif);font-weight:800;font-size:20px;color:var(--pink-dark);}
   .book-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
   .book-title{font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -89,40 +91,18 @@
   .textLayer > span{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%;}
   .textLayer ::selection{background:rgba(255,111,168,0.35);}
 
-  ::highlight(marg-pink){background-color:rgba(255,111,168,0.4);}
-  ::highlight(marg-mint){background-color:rgba(63,203,168,0.4);}
-  ::highlight(marg-sky){background-color:rgba(95,182,242,0.4);}
-  ::highlight(marg-underline){text-decoration:underline;text-decoration-color:#E8508C;text-decoration-thickness:2.5px;text-underline-offset:3px;}
-
-  .ink-layer{position:absolute;left:0;top:0;right:0;bottom:0;pointer-events:none;touch-action:none;}
-
-  .tool-dock{
-    position:fixed;top:50%;right:18px;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;
-    background:#fff;padding:9px;border-radius:22px;box-shadow:0 6px 0 var(--line), 0 10px 24px rgba(0,0,0,0.12);z-index:35;
-    border:2px solid var(--line);
+  .hl-popup{
+    position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(20px);
+    display:flex;align-items:center;gap:10px;background:#fff;padding:9px 14px;border-radius:24px;
+    box-shadow:0 6px 0 var(--line), 0 10px 24px rgba(0,0,0,0.18);z-index:120;border:2px solid var(--line);
+    opacity:0;pointer-events:none;transition:opacity .18s ease, transform .18s ease;
   }
-  .tool-btn{
-    width:38px;height:38px;border-radius:50%;border:2px solid transparent;background:var(--panel-2);cursor:pointer;
-    display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:var(--ink);
-    transition:transform .1s ease;
-  }
-  .tool-btn:active{transform:scale(0.92);}
-  .tool-btn.active{border-color:var(--ink);box-shadow:0 0 0 2px #fff inset;}
-  .tool-btn.tool-color.pink{background:#FF6FA8;}
-  .tool-btn.tool-color.mint{background:#3FCBA8;}
-  .tool-btn.tool-color.sky{background:#5FB6F2;}
-  .tool-dock hr{width:100%;border:none;border-top:2px solid var(--line);margin:2px 0;}
-  .tool-hint{
-    position:fixed;bottom:78px;left:50%;transform:translateX(-50%);background:#3A2E3F;color:#fff;
-    font-size:11.5px;font-weight:700;padding:6px 14px;border-radius:14px;z-index:34;opacity:0;pointer-events:none;transition:opacity .2s ease;
-    white-space:nowrap;
-  }
-  .tool-hint.show{opacity:0.94;}
-
-  @media (max-width: 780px){
-    .tool-dock{right:8px;padding:7px;gap:6px;}
-    .tool-btn{width:34px;height:34px;font-size:13px;}
-  }
+  .hl-popup.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
+  .hl-popup-label{font-size:12px;font-weight:800;color:var(--ink-soft);white-space:nowrap;}
+  .hl-swatch{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,0.7);cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,0.12);}
+  .hl-swatch.pink{background:#FF6FA8;}
+  .hl-swatch.mint{background:#3FCBA8;}
+  .hl-swatch.sky{background:#5FB6F2;}
 
   .page-nav{
     position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;
@@ -147,7 +127,6 @@
   .item-card.pink-b{border-left:5px solid var(--pink);}
   .item-card.mint-b{border-left:5px solid var(--mint);}
   .item-card.sky-b{border-left:5px solid var(--sky);}
-  .item-card.underline-b{border-left:5px solid var(--ink);}
   .item-page{font-size:10px;color:var(--pink-dark);font-weight:800;text-transform:uppercase;letter-spacing:0.4px;}
   .item-text{font-size:12.5px;line-height:1.5;color:var(--ink);margin-top:4px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
   .item-del{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:13px;padding:2px 4px;}
@@ -261,10 +240,7 @@
 
   <div class="topbar">
     <div class="brand" id="brandLogo">
-      <svg width="26" height="26" viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2" y="3" width="22" height="20" rx="5" fill="#FF6FA8"/>
-        <path d="M13 6 L13 20 M13 7.5 C11 6 8 5.5 5.5 6.2 L5.5 18.2 C8 17.5 11 18 13 19.5 M13 7.5 C15 6 18 5.5 20.5 6.2 L20.5 18.2 C18 17.5 15 18 13 19.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <div id="mascotBrand" style="cursor:pointer;"></div>
       <span class="brand-name">Marginalia</span>
     </div>
     <div class="book-meta" id="bookMeta" style="display:none;">
@@ -318,7 +294,6 @@
         <div class="page-canvas-wrap" id="canvasWrap">
           <canvas id="pdfCanvas"></canvas>
           <div class="textLayer" id="textLayer"></div>
-          <svg class="ink-layer" id="inkLayer"></svg>
         </div>
       </div>
     </div>
@@ -344,17 +319,12 @@
 
   <button class="fab" id="fabAdd" title="Add a book you want to read">+</button>
 
-  <div class="tool-dock" id="toolDock" style="display:none;">
-    <button class="tool-btn active" data-tool="none" title="Just reading — no marking">👆</button>
-    <button class="tool-btn tool-color pink" data-tool="pink" title="Pink highlighter — drag over text"></button>
-    <button class="tool-btn tool-color mint" data-tool="mint" title="Mint highlighter — drag over text"></button>
-    <button class="tool-btn tool-color sky" data-tool="sky" title="Sky highlighter — drag over text"></button>
-    <button class="tool-btn" data-tool="underline" title="Underline — drag over text">U</button>
-    <hr/>
-    <button class="tool-btn" data-tool="pen" title="Pen — draw freely on the page">✎</button>
-    <button class="tool-btn" data-tool="eraser" title="Eraser — tap a mark to remove it">🧽</button>
+  <div class="hl-popup" id="hlPopup">
+    <span class="hl-popup-label">Highlight it:</span>
+    <div class="hl-swatch pink" data-color="pink"></div>
+    <div class="hl-swatch mint" data-color="mint"></div>
+    <div class="hl-swatch sky" data-color="sky"></div>
   </div>
-  <div class="tool-hint" id="toolHint"></div>
 
   <!-- add-to-wishlist modal -->
   <div class="modal-scrim" id="addModalScrim">
@@ -390,70 +360,48 @@
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-// ---------------- mascot: Marge, a small reading owl ----------------
-// Redesigned as an owl perched on a little open book — reads as a crafted brand
-// mark rather than a generic cartoon, while keeping the four moods.
-let __mascotUid = 0;
+// ---------------- mascot (original cute reading bird) ----------------
 function mascotSVG(opts){
   opts = opts || {};
   const size = opts.size || 64;
   const mood = opts.celebrate ? 'celebrate' : (opts.mood || 'happy');
-  const uid = 'm' + (__mascotUid++);
 
-  const tufts = {
-    celebrate: '<path d="M30 16 Q26 4 20 8" stroke="#7C5CC9" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M62 16 Q66 4 72 8" stroke="#7C5CC9" stroke-width="5" stroke-linecap="round" fill="none"/>',
-    happy:     '<path d="M31 15 Q27 6 21 9" stroke="#7C5CC9" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M61 15 Q65 6 71 9" stroke="#7C5CC9" stroke-width="5" stroke-linecap="round" fill="none"/>',
-    worried:   '<path d="M31 16 Q29 8 22 8" stroke="#7C5CC9" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M61 16 Q63 8 70 8" stroke="#7C5CC9" stroke-width="5" stroke-linecap="round" fill="none"/>',
-    sad:       '<path d="M32 17 Q33 10 27 7" stroke="#7C5CC9" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M60 17 Q59 10 65 7" stroke="#7C5CC9" stroke-width="5" stroke-linecap="round" fill="none"/>'
+  const wings = {
+    celebrate: '<path d="M14 46 C4 40, 2 26, 10 20" stroke="#B49AF0" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M74 46 C84 40, 86 26, 78 20" stroke="#B49AF0" stroke-width="6" stroke-linecap="round" fill="none"/>',
+    happy:     '<path d="M18 50 C10 52, 6 44, 10 38" stroke="#B49AF0" stroke-width="6" stroke-linecap="round" fill="none"/>',
+    worried:   '<path d="M18 52 C10 55, 7 48, 11 43" stroke="#B49AF0" stroke-width="6" stroke-linecap="round" fill="none"/>',
+    sad:       '<path d="M20 54 C13 59, 11 53, 14 49" stroke="#B49AF0" stroke-width="6" stroke-linecap="round" fill="none"/>'
   };
-  const pupils = {
-    celebrate: '<path d="M32 40 Q36 34 40 40" stroke="#2E2440" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M52 40 Q56 34 60 40" stroke="#2E2440" stroke-width="3.4" fill="none" stroke-linecap="round"/>',
-    happy:     '<circle cx="36" cy="40" r="4.6" fill="#2E2440"/><circle cx="56" cy="40" r="4.6" fill="#2E2440"/><circle cx="37.6" cy="38.2" r="1.5" fill="#fff"/><circle cx="57.6" cy="38.2" r="1.5" fill="#fff"/>',
-    worried:   '<circle cx="36" cy="41" r="4.2" fill="#2E2440"/><circle cx="56" cy="41" r="4.2" fill="#2E2440"/><circle cx="37" cy="39.6" r="1.3" fill="#fff"/><circle cx="57" cy="39.6" r="1.3" fill="#fff"/>',
-    sad:       '<circle cx="36" cy="42" r="4" fill="#2E2440"/><circle cx="56" cy="42" r="4" fill="#2E2440"/>'
+  const eyes = {
+    celebrate: '<path d="M32 36 Q36 30 40 36" stroke="#3A2E3F" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M52 36 Q56 30 60 36" stroke="#3A2E3F" stroke-width="3.5" fill="none" stroke-linecap="round"/>',
+    happy:     '<circle cx="35" cy="37" r="4.2" fill="#3A2E3F"/><circle cx="57" cy="37" r="4.2" fill="#3A2E3F"/><circle cx="36.5" cy="35.5" r="1.3" fill="#fff"/><circle cx="58.5" cy="35.5" r="1.3" fill="#fff"/>',
+    worried:   '<path d="M30 34 Q35 38 40 35" stroke="#3A2E3F" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M52 35 Q57 38 62 34" stroke="#3A2E3F" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M29 30 Q35 27 41 29" stroke="#3A2E3F" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M51 29 Q57 27 63 30" stroke="#3A2E3F" stroke-width="2.4" fill="none" stroke-linecap="round"/>',
+    sad:       '<path d="M30 38 Q35 34 40 37" stroke="#3A2E3F" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M52 37 Q57 34 62 38" stroke="#3A2E3F" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M31 30 Q35 33 40 31" stroke="#3A2E3F" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M52 31 Q57 33 61 30" stroke="#3A2E3F" stroke-width="2.4" fill="none" stroke-linecap="round"/>'
   };
-  const beakMouth = {
-    celebrate: '<path d="M42 49 L50 49 L46 55 Z" fill="#FFB238"/>',
-    happy:     '<path d="M42 49 L50 49 L46 55 Z" fill="#FFB238"/>',
-    worried:   '<path d="M42 51 Q46 49 50 51" stroke="#E8930F" stroke-width="3" fill="none" stroke-linecap="round"/>',
-    sad:       '<path d="M42 53 Q46 48 50 53" stroke="#E8930F" stroke-width="3" fill="none" stroke-linecap="round"/>'
+  const mouth = {
+    celebrate: '<path d="M40 46 L52 46 L46 52 Z" fill="#FFC94D"/>',
+    happy:     '<path d="M40 46 L52 46 L46 52 Z" fill="#FFC94D"/>',
+    worried:   '<path d="M40 48 Q46 46 52 48" stroke="#E8AC1F" stroke-width="3.2" fill="none" stroke-linecap="round"/>',
+    sad:       '<path d="M40 50 Q46 45 52 50" stroke="#E8AC1F" stroke-width="3.2" fill="none" stroke-linecap="round"/>'
   };
   const tear = mood === 'sad'
-    ? `<path d="M63 43 Q66 49 63 53 Q60 49 63 43 Z" fill="#5FB6F2" opacity="0.9"/>`
+    ? '<path d="M62 40 Q65 46 62 50 Q59 46 62 40 Z" fill="#5FB6F2" opacity="0.85"/>'
     : '';
-  const tilt = mood === 'sad' ? `transform="rotate(-5 46 44)"` : (mood === 'celebrate' ? `transform="rotate(2 46 44)"` : '');
+  const tilt = mood === 'sad' ? 'transform="rotate(-4 46 42)"' : '';
 
-  return `<svg width="${size}" height="${size}" viewBox="0 0 92 92" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="${uid}body" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#8FCBF2"/>
-        <stop offset="100%" stop-color="#5FB6F2"/>
-      </linearGradient>
-      <linearGradient id="${uid}face" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#FFFFFF"/>
-        <stop offset="100%" stop-color="#EAF6FF"/>
-      </linearGradient>
-      <linearGradient id="${uid}book" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stop-color="#FF7FB4"/>
-        <stop offset="100%" stop-color="#FF6FA8"/>
-      </linearGradient>
-    </defs>
-    <ellipse cx="46" cy="80" rx="24" ry="4" fill="#3A2E3F" opacity="0.08"/>
+  return `<svg width="${size}" height="${size}" viewBox="0 0 92 78" xmlns="http://www.w3.org/2000/svg">
     <g ${tilt}>
-      ${tufts[mood]}
-      <ellipse cx="46" cy="44" rx="29" ry="30" fill="url(#${uid}body)"/>
-      <path d="M17 40 Q10 44 15 52 Q22 50 24 42 Z" fill="#8FCBF2"/>
-      <path d="M75 40 Q82 44 77 52 Q70 50 68 42 Z" fill="#8FCBF2"/>
-      <ellipse cx="46" cy="49" rx="19.5" ry="19" fill="url(#${uid}face)"/>
-      <circle cx="36" cy="40" r="9.5" fill="none" stroke="#3A2E3F" stroke-width="2.6" opacity="0.85"/>
-      <circle cx="56" cy="40" r="9.5" fill="none" stroke="#3A2E3F" stroke-width="2.6" opacity="0.85"/>
-      <path d="M45.5 40 Q46 37 46.5 40" stroke="#3A2E3F" stroke-width="2.6" fill="none" opacity="0.85"/>
-      ${pupils[mood]}
-      ${beakMouth[mood]}
-      ${tear}
-      <rect x="20" y="70" width="52" height="4" rx="2" fill="url(#${uid}book)"/>
-      <path d="M20 70 Q46 64 72 70 L72 74 Q46 68 20 74 Z" fill="url(#${uid}book)"/>
-      <path d="M46 65 L46 73" stroke="#E8508C" stroke-width="1.4" opacity="0.6"/>
+    ${wings[mood]}
+    <ellipse cx="46" cy="42" rx="30" ry="27" fill="#5FB6F2"/>
+    <ellipse cx="46" cy="48" rx="19" ry="15" fill="#EAF6FF"/>
+    <path d="M46 20 C40 10, 30 8, 26 14 C34 14, 40 16, 46 24 C52 16, 58 14, 66 14 C62 8, 52 10, 46 20 Z" fill="#5FB6F2"/>
+    ${eyes[mood]}
+    <ellipse cx="27" cy="46" rx="5" ry="3.5" fill="#FF9E7D" opacity="0.7"/>
+    <ellipse cx="65" cy="46" rx="5" ry="3.5" fill="#FF9E7D" opacity="0.7"/>
+    ${mouth[mood]}
+    ${tear}
+    <rect x="26" y="60" width="40" height="9" rx="3" fill="#FF6FA8"/>
+    <rect x="26" y="60" width="40" height="4" rx="2" fill="#FF9EC4"/>
     </g>
   </svg>`;
 }
@@ -468,12 +416,6 @@ const COVER_COLORS = [
   { key:'butter', hex:'#FFC94D' },
   { key:'peach', hex:'#FF9E7D' }
 ];
-function bookIconSVG(finished){
-  const check = finished
-    ? '<path d="M8 13.5 L11 16.5 L17 9.5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
-    : '<path d="M7 6 L7 19 M7 7.2 C5.5 6.2 3.5 6 2 6.5 L2 17.5 C3.5 17 5.5 17.2 7 18.2 M7 7.2 C8.5 6.2 10.5 6 12 6.5 L12 17.5 C10.5 17 8.5 17.2 7 18.2" transform="translate(2 1) scale(0.85)" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>';
-  return `<svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${check}</svg>`;
-}
 function colorForString(str){
   let h = 0;
   for (let i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) >>> 0; }
@@ -499,54 +441,6 @@ function showToast(msg){
   showToast._t = setTimeout(()=> t.classList.remove('show'), 2200);
 }
 
-// ---------------- storage availability check ----------------
-// The "Couldn't save" that kept happening on EVERY save (not occasionally) usually
-// means window.storage itself isn't available in this viewing context, not that a
-// single request failed. We test it once at startup; if it's broken, we swap in an
-// in-memory shim with the identical interface so the app still works for this
-// session, and we tell the user honestly instead of pretending it saved.
-let PERSIST_OK = true;
-function installMemoryStorageShim(){
-  const mem = {};
-  const k = (key, shared) => (shared ? 'shared:' : 'me:') + key;
-  window.storage = {
-    async get(key, shared){
-      const kk = k(key, shared);
-      if (!(kk in mem)) throw new Error('key not found (in-memory shim)');
-      return { key, value: mem[kk], shared: !!shared };
-    },
-    async set(key, value, shared){ mem[k(key, shared)] = value; return { key, value, shared: !!shared }; },
-    async delete(key, shared){ delete mem[k(key, shared)]; return { key, deleted: true, shared: !!shared }; },
-    async list(prefix, shared){
-      const p = k(prefix || '', shared);
-      const keys = Object.keys(mem).filter(x => x.startsWith(p)).map(x => x.slice(shared ? 7 : 3));
-      return { keys, prefix, shared: !!shared };
-    }
-  };
-}
-function showPersistWarning(){
-  const banner = document.createElement('div');
-  banner.id = 'persistWarning';
-  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:500;background:#3A2E3F;color:#fff;font-family:Nunito,sans-serif;font-size:12.5px;font-weight:700;text-align:center;padding:9px 14px;';
-  banner.innerHTML = "⚠️ This session can't reach saved storage right now — your bookmarks, notes and highlights will disappear if you close or reload this tab. <span style=\"text-decoration:underline;cursor:pointer;\" id=\"dismissPersistWarning\">Dismiss</span>";
-  document.body.prepend(banner);
-  document.getElementById('dismissPersistWarning').addEventListener('click', ()=> banner.remove());
-}
-async function checkStorageAvailability(){
-  try{
-    if (typeof window.storage === 'undefined') throw new Error('window.storage is not defined in this context');
-    const testVal = String(Date.now());
-    await window.storage.set('__marg_boot_check__', testVal, false);
-    const readBack = await window.storage.get('__marg_boot_check__', false);
-    if (!readBack || readBack.value !== testVal) throw new Error('storage did not round-trip correctly');
-  }catch(e){
-    console.warn('Persistent storage unavailable, falling back to in-memory for this session:', e);
-    PERSIST_OK = false;
-    installMemoryStorageShim();
-    showPersistWarning();
-  }
-}
-
 // ---------------- hashing ----------------
 async function hashFile(file){
   try{
@@ -562,96 +456,103 @@ async function hashFile(file){
   }
 }
 
-// ---------------- storage helpers with retry ----------------
-// Storage calls are rate limited server-side. A single burst of page turns used to
-// fire 2-3 uncoalesced storage calls each, which could get throttled and surface as
-// "Couldn't save". Every write now goes through this small retry wrapper.
-async function storageSetWithRetry(key, value, shared, attempts){
-  attempts = attempts || 3;
-  for (let i=0;i<attempts;i++){
+// ---------------- storage layer (cloud storage when available, localStorage fallback otherwise) ----------------
+// window.storage only exists inside the Claude.ai artifact runtime. When this file is hosted on its
+// own (Vercel, GitHub Pages, etc.) it won't exist, so we fall back to the browser's localStorage —
+// which works great for a single device/browser, just doesn't sync across devices like the cloud one does.
+const LS_PREFIX = 'marginalia:';
+let usingCloudStorage = (typeof window.storage !== 'undefined');
+let cloudStorageWarned = false;
+
+async function dbGet(key){
+  if (usingCloudStorage){
     try{
-      const res = await window.storage.set(key, value, !!shared);
-      return res;
+      const res = await window.storage.get(key, false);
+      return (res && typeof res.value === 'string') ? res.value : null;
     }catch(e){
-      if (i === attempts-1) throw e;
-      await new Promise(r=> setTimeout(r, 300 * (i+1)));
+      if (!cloudStorageWarned){ cloudStorageWarned = true; }
+      // fall through to localStorage this call and future calls
+      usingCloudStorage = false;
     }
   }
+  try{ return localStorage.getItem(LS_PREFIX + key); }
+  catch(e){ return null; }
+}
+async function dbSet(key, value){
+  if (usingCloudStorage){
+    try{ await window.storage.set(key, value, false); return true; }
+    catch(e){ usingCloudStorage = false; }
+  }
+  try{ localStorage.setItem(LS_PREFIX + key, value); return true; }
+  catch(e){ return false; }
+}
+async function dbDelete(key){
+  if (usingCloudStorage){
+    try{ await window.storage.delete(key, false); return; }
+    catch(e){ usingCloudStorage = false; }
+  }
+  try{ localStorage.removeItem(LS_PREFIX + key); }catch(e){}
+}
+async function dbListKeys(prefix){
+  if (usingCloudStorage){
+    try{
+      const res = await window.storage.list(prefix, false);
+      return (res && res.keys) ? res.keys : [];
+    }catch(e){ usingCloudStorage = false; }
+  }
+  try{
+    const keys = [];
+    for (let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      if (k && k.startsWith(LS_PREFIX + prefix)) keys.push(k.slice(LS_PREFIX.length));
+    }
+    return keys;
+  }catch(e){ return []; }
 }
 
 // ---------------- storage: books ----------------
 async function loadBookState(id){
   try{
-    const res = await window.storage.get('book:' + id, false);
-    if (res && res.value) return JSON.parse(res.value);
+    const val = await dbGet('book:' + id);
+    if (val) return JSON.parse(val);
   }catch(e){}
   return null;
 }
-
-// A lightweight index of every book's shelf-card info, kept as ONE key so the shelf
-// can load with a single storage.get instead of one get() per book.
-async function loadLibraryIndex(){
-  try{
-    const res = await window.storage.get('library-index', false);
-    if (res && res.value) return JSON.parse(res.value);
-  }catch(e){}
-  return {};
-}
-async function saveLibraryIndexEntry(bookKey, summary){
-  const idx = await loadLibraryIndex();
-  idx[bookKey] = summary;
-  try{ await storageSetWithRetry('library-index', JSON.stringify(idx), false); }
-  catch(e){ /* non-fatal, shelf will just be stale until next successful save */ }
-}
-
 let saveTimer = null;
-let saveInFlight = false;
-let saveQueued = false;
 function saveBookState(){
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(flushBookState, 400);
-}
-async function flushBookState(){
-  if (!currentBookId || !state) return;
-  if (saveInFlight){ saveQueued = true; return; }
-  saveInFlight = true;
-  const bookKey = 'book:' + currentBookId;
-  try{
-    await storageSetWithRetry(bookKey, JSON.stringify(state), false);
-    await saveLibraryIndexEntry(bookKey, {
-      key: bookKey, title: state.title, numPages: state.numPages,
-      currentPage: state.currentPage, lastOpened: state.lastOpened
-    });
-  }catch(e){
-    showToast("Couldn't save — will retry");
-  }finally{
-    saveInFlight = false;
-    if (saveQueued){ saveQueued = false; flushBookState(); }
-  }
+  saveTimer = setTimeout(async ()=>{
+    if (!currentBookId || !state) return;
+    const ok = await dbSet('book:' + currentBookId, JSON.stringify(state));
+    if (!ok) showToast("Couldn't save");
+  }, 250);
 }
 async function listLibrary(){
-  const idx = await loadLibraryIndex();
-  const items = Object.values(idx);
-  items.sort((a,b)=> (b.lastOpened||0) - (a.lastOpened||0));
-  return items;
+  try{
+    const keys = await dbListKeys('book:');
+    const items = [];
+    for (const key of keys){
+      try{
+        const val = await dbGet(key);
+        if (val) items.push({ key, ...JSON.parse(val) });
+      }catch(e){}
+    }
+    items.sort((a,b)=> (b.lastOpened||0) - (a.lastOpened||0));
+    return items;
+  }catch(e){ return []; }
 }
 
 // ---------------- storage: wishlist ----------------
 async function loadWishlist(){
   try{
-    const res = await window.storage.get('wishlist', false);
-    if (res && res.value) return JSON.parse(res.value);
+    const val = await dbGet('wishlist');
+    if (val) return JSON.parse(val);
   }catch(e){}
   return [];
 }
 async function saveWishlist(list){
-  try{
-    await storageSetWithRetry('wishlist', JSON.stringify(list), false);
-    return true;
-  }catch(e){
-    showToast("Couldn't save that — check your connection and try again");
-    return false;
-  }
+  const ok = await dbSet('wishlist', JSON.stringify(list));
+  if (!ok) showToast("Couldn't save");
 }
 
 // ---------------- storage: streak ----------------
@@ -663,30 +564,16 @@ function todayStr(offsetDays){
 }
 async function loadStreak(){
   try{
-    const res = await window.storage.get('streak', false);
-    if (res && res.value) return JSON.parse(res.value);
+    const val = await dbGet('streak');
+    if (val) return JSON.parse(val);
   }catch(e){}
   return { currentStreak: 0, longestStreak: 0, lastReadDate: null, history: {}, goalPages: 10 };
 }
 async function saveStreak(streak){
-  try{ await storageSetWithRetry('streak', JSON.stringify(streak), false); }
-  catch(e){ /* silent, non-critical */ }
+  await dbSet('streak', JSON.stringify(streak));
 }
-
-// Page turns happen fast — flipping through a chapter used to fire a get+set to the
-// streak key on EVERY single page. That's now batched in memory and flushed on the
-// same debounce as the book save, so a quick flip-through costs one write, not N.
-let pendingPageIncrements = 0;
-let streakFlushTimer = null;
-function queueReadingActivity(){
-  pendingPageIncrements += 1;
-  clearTimeout(streakFlushTimer);
-  streakFlushTimer = setTimeout(flushReadingActivity, 400);
-}
-async function flushReadingActivity(){
-  const inc = pendingPageIncrements;
-  pendingPageIncrements = 0;
-  if (inc <= 0) return;
+// called whenever the reader turns a page — updates streak + today's page tally
+async function recordReadingActivity(){
   const streak = await loadStreak();
   const today = todayStr(0);
   const yesterday = todayStr(-1);
@@ -696,11 +583,12 @@ async function flushReadingActivity(){
     streak.lastReadDate = today;
   }
   streak.history = streak.history || {};
-  streak.history[today] = (streak.history[today]||0) + inc;
+  streak.history[today] = (streak.history[today]||0) + 1;
+  // keep only the last 30 days of history
   const keys = Object.keys(streak.history).sort();
   if (keys.length > 30){ keys.slice(0, keys.length-30).forEach(k=> delete streak.history[k]); }
   await saveStreak(streak);
-  if (el('moodCard') && el('shelfView').style.display !== 'none') renderMoodCard();
+  return streak;
 }
 
 function timeAgo(ts){
@@ -718,7 +606,7 @@ function timeAgo(ts){
 function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
 // ---------------- shelf rendering ----------------
-async function renderMoodCard(){
+async function getMoodInfo(){
   const streak = await loadStreak();
   const today = todayStr(0);
   const yesterday = todayStr(-1);
@@ -739,6 +627,20 @@ async function renderMoodCard(){
     mood = 'happy';
     message = `Ready to start your first reading streak? 🐣`;
   }
+  return { streak, mood, message, today };
+}
+
+async function renderBrandMascot(){
+  const { mood, streak, message } = await getMoodInfo();
+  const holder = el('mascotBrand');
+  holder.innerHTML = mascotSVG({ size: 30, mood });
+  holder.title = message + (streak.currentStreak ? ` (${streak.currentStreak} day streak)` : '');
+  holder.onclick = ()=> showToast(message);
+}
+
+async function renderMoodCard(){
+  const { streak, mood, message, today } = await getMoodInfo();
+  renderBrandMascot();
 
   const goal = streak.goalPages || 10;
   const pagesToday = (streak.history && streak.history[today]) || 0;
@@ -813,10 +715,7 @@ async function renderShelf(){
     if (delBtn) delBtn.addEventListener('click', async (e)=>{
       e.stopPropagation();
       if (!confirm("Remove this book's bookmarks, notes and highlights? This can't be undone.")) return;
-      try{ await window.storage.delete(b.key, false); }catch(err){}
-      const idx = await loadLibraryIndex();
-      delete idx[b.key];
-      await storageSetWithRetry('library-index', JSON.stringify(idx), false).catch(()=>{});
+      try{ await dbDelete(b.key); }catch(err){}
       renderShelf();
     });
   });
@@ -846,7 +745,7 @@ function bookCardHtml(b, kind){
   const color = colorForString(b.title||'');
   const badge = kind==='finished' ? '<span class="finished-badge">🏆</span>' : '';
   return `<div class="book-card" data-book-key="${b.key}">
-    <div class="book-cover" style="background:${color};">${bookIconSVG(kind==='finished')}</div>
+    <div class="book-cover" style="background:${color};">📕</div>
     <div class="book-card-body">
       <div class="book-card-title">${escapeHtml(b.title||'Untitled PDF')}</div>
       <div class="book-card-sub">Page ${b.currentPage||1} of ${b.numPages||'?'} · ${timeAgo(b.lastOpened)}</div>
@@ -861,7 +760,7 @@ function bookCardHtml(b, kind){
 
 function wishlistCardHtml(w){
   return `<div class="book-card" data-wish-id="${w.id}">
-    <div class="book-cover" style="background:${w.color||'#FF6FA8'};">${bookIconSVG(false)}</div>
+    <div class="book-cover" style="background:${w.color||'#FF6FA8'};">📘</div>
     <div class="book-card-body">
       <div class="book-card-title">${escapeHtml(w.title)}</div>
       <div class="book-card-sub">${w.author ? escapeHtml(w.author) + ' · ' : ''}added ${timeAgo(w.addedAt)}</div>
@@ -895,14 +794,10 @@ el('addModalScrim').addEventListener('click', (e)=>{ if (e.target===el('addModal
 el('wlSave').addEventListener('click', async ()=>{
   const title = el('wlTitle').value.trim();
   if (!title){ showToast('Give it a title first'); return; }
-  const saveBtn = el('wlSave');
-  saveBtn.disabled = true;
   const author = el('wlAuthor').value.trim();
   const list = await loadWishlist();
   list.unshift({ id: 'w'+Date.now(), title, author, color: selectedColor, addedAt: Date.now() });
-  const ok = await saveWishlist(list);
-  saveBtn.disabled = false;
-  if (!ok) return; // keep the modal open with their input intact so nothing is lost
+  await saveWishlist(list);
   el('addModalScrim').classList.remove('show');
   showToast('Added to your shelf 🌸');
   renderShelf();
@@ -912,43 +807,35 @@ el('wlSave').addEventListener('click', async ()=>{
 async function openFile(file){
   if (!file || file.type !== 'application/pdf'){ showToast('That\u2019s not a PDF — try again?'); return; }
   el('loadingNote').textContent = 'Reading ' + file.name + ' …';
-  try{
-    const { id, buf } = await hashFile(file);
-    currentBookId = id;
+  const { id, buf } = await hashFile(file);
+  currentBookId = id;
 
-    const existing = await loadBookState(id);
-    const loadingTask = pdfjsLib.getDocument({ data: buf.slice(0) });
-    pdfDoc = await loadingTask.promise;
+  const existing = await loadBookState(id);
+  const loadingTask = pdfjsLib.getDocument({ data: buf.slice(0) });
+  pdfDoc = await loadingTask.promise;
 
-    state = existing || {
-      title: file.name, numPages: pdfDoc.numPages, currentPage: 1,
-      bookmarks: [], notes: [], highlights: [], ink: {}, celebrated: false, halfCelebrated: false
-    };
-    state.title = file.name;
-    state.numPages = pdfDoc.numPages;
-    state.lastOpened = Date.now();
-    if (!state.currentPage || state.currentPage > pdfDoc.numPages) state.currentPage = 1;
-    if (typeof state.celebrated !== 'boolean') state.celebrated = false;
-    if (typeof state.halfCelebrated !== 'boolean') state.halfCelebrated = false;
-    if (!state.ink) state.ink = {};
+  state = existing || {
+    title: file.name, numPages: pdfDoc.numPages, currentPage: 1,
+    bookmarks: [], notes: [], highlights: [], celebrated: false, halfCelebrated: false
+  };
+  state.title = file.name;
+  state.numPages = pdfDoc.numPages;
+  state.lastOpened = Date.now();
+  if (!state.currentPage || state.currentPage > pdfDoc.numPages) state.currentPage = 1;
+  if (typeof state.celebrated !== 'boolean') state.celebrated = false;
+  if (typeof state.halfCelebrated !== 'boolean') state.halfCelebrated = false;
 
-    await flushBookState();
-    el('loadingNote').textContent = '';
+  saveBookState();
+  el('loadingNote').textContent = '';
 
-    if (pendingWishlistId){
-      const list = await loadWishlist();
-      await saveWishlist(list.filter(x=>x.id!==pendingWishlistId));
-      pendingWishlistId = null;
-    }
-
-    enterReader();
-    goToPage(state.currentPage, true);
-  }catch(e){
-    console.error('openFile failed:', e);
-    el('loadingNote').textContent = '';
-    pdfDoc = null; state = null; currentBookId = null;
-    showToast('Could not open that PDF — it may be corrupted or password-protected');
+  if (pendingWishlistId){
+    const list = await loadWishlist();
+    await saveWishlist(list.filter(x=>x.id!==pendingWishlistId));
+    pendingWishlistId = null;
   }
+
+  enterReader();
+  goToPage(state.currentPage, true);
 }
 
 function enterReader(){
@@ -960,7 +847,6 @@ function enterReader(){
   el('pageNav').style.display = 'flex';
   el('bookMeta').style.display = 'flex';
   el('libraryBtn').style.display = 'inline-flex';
-  el('toolDock').style.display = 'flex';
   el('bookTitleLabel').textContent = state.title;
   el('numPagesLabel').textContent = state.numPages;
   renderSidebarTab();
@@ -975,8 +861,6 @@ function returnToShelf(){
   el('pageNav').style.display = 'none';
   el('bookMeta').style.display = 'none';
   el('libraryBtn').style.display = 'none';
-  el('toolDock').style.display = 'none';
-  setActiveTool('none');
   el('shelfView').style.display = 'flex';
   el('fabAdd').style.display = 'flex';
   pdfDoc = null; state = null; currentBookId = null;
@@ -1025,19 +909,12 @@ async function goToPage(num, skipSave){
     if (task && task.promise) await task.promise;
 
     reapplyHighlightsForPage(num, textLayerDiv);
-
-    const inkLayer = el('inkLayer');
-    inkLayer.setAttribute('width', viewport.width);
-    inkLayer.setAttribute('height', viewport.height);
-    inkLayer.style.width = viewport.width + 'px';
-    inkLayer.style.height = viewport.height + 'px';
-    renderInkForPage(num);
   }catch(e){
     console.error(e);
     showToast('Could not render this page');
   }
 
-  if (!skipSave){ saveBookState(); queueReadingActivity(); }
+  if (!skipSave){ saveBookState(); recordReadingActivity().then(renderBrandMascot); }
   updateSpine();
   renderSidebarTab();
 
@@ -1089,14 +966,9 @@ function launchCelebration(){
 }
 el('celebrateClose').addEventListener('click', ()=> el('celebrateScrim').classList.remove('show'));
 
-// ---------------- highlights & underline ----------------
-// Uses the CSS Custom Highlight API. Supported: Chrome/Edge 105+, Safari 17.2+.
-// Firefox does not support it yet — we detect that and fall back to inline <mark>-style
-// spans wrapped around the actual DOM range so it still works everywhere.
-const HL_SUPPORTED = typeof CSS !== 'undefined' && 'highlights' in CSS;
-
+// ---------------- highlights ----------------
 function getHighlightObj(color){
-  if (!HL_SUPPORTED) return null;
+  if (!('highlights' in CSS)) return null;
   if (!cssHighlightsMap[color]){
     const hl = new Highlight();
     CSS.highlights.set('marg-' + color, hl);
@@ -1126,40 +998,12 @@ function findRangeForText(container, text){
 }
 function reapplyHighlightsForPage(pageNum, textLayerDiv){
   clearHighlightRanges();
-  // clear any fallback <span> wrappers from a previous render of this page
-  textLayerDiv.querySelectorAll('.marg-fallback-mark').forEach(m=>{
-    const parent = m.parentNode;
-    while (m.firstChild) parent.insertBefore(m.firstChild, m);
-    parent.removeChild(m);
-  });
   (state.highlights||[]).filter(h => h.page === pageNum).forEach(h=>{
     const range = findRangeForText(textLayerDiv, h.text);
-    if (!range) return;
-    if (HL_SUPPORTED){
-      const hlObj = getHighlightObj(h.color);
-      if (hlObj) hlObj.add(range);
-    } else {
-      applyFallbackMark(range, h.color);
-    }
+    if (range){ const hlObj = getHighlightObj(h.color); if (hlObj) hlObj.add(range); }
   });
 }
-function applyFallbackMark(range, color){
-  try{
-    const mark = document.createElement('span');
-    mark.className = 'marg-fallback-mark';
-    if (color === 'underline'){
-      mark.style.textDecoration = 'underline';
-      mark.style.textDecorationColor = '#E8508C';
-      mark.style.textDecorationThickness = '2.5px';
-    } else {
-      const bg = color==='pink' ? 'rgba(255,111,168,0.4)' : color==='mint' ? 'rgba(63,203,168,0.4)' : 'rgba(95,182,242,0.4)';
-      mark.style.backgroundColor = bg;
-      mark.style.borderRadius = '2px';
-    }
-    range.surroundContents(mark);
-  }catch(e){ /* range spans multiple elements — CSS Highlight API path handles that case; fallback just skips it */ }
-}
-function commitHighlightFromSelection(color){
+function addHighlightFromSelection(color){
   const sel = window.getSelection();
   if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
   const text = sel.toString().trim();
@@ -1167,168 +1011,35 @@ function commitHighlightFromSelection(color){
   const range = sel.getRangeAt(0).cloneRange();
   const id = 'h' + Date.now() + Math.random().toString(36).slice(2,7);
   state.highlights.push({ id, page: state.currentPage, text, color, createdAt: Date.now() });
-  if (HL_SUPPORTED){
-    const hlObj = getHighlightObj(color);
-    if (hlObj) hlObj.add(range);
-  } else {
-    applyFallbackMark(range, color);
-  }
+  const hlObj = getHighlightObj(color);
+  if (hlObj) hlObj.add(range);
   sel.removeAllRanges();
+  hideHlPopup();
   saveBookState();
   if (activeTab === 'highlights') renderSidebarTab();
 }
-function eraseHighlightsInSelection(sel){
-  const text = sel.toString().trim();
-  if (!text) return;
-  const before = state.highlights.length;
-  state.highlights = state.highlights.filter(h=>{
-    if (h.page !== state.currentPage) return true;
-    return !(text.includes(h.text) || h.text.includes(text));
-  });
-  sel.removeAllRanges();
-  if (state.highlights.length !== before){
-    reapplyHighlightsForPage(state.currentPage, el('textLayer'));
-    saveBookState();
-    if (activeTab === 'highlights') renderSidebarTab();
-  }
-}
+function hideHlPopup(){ el('hlPopup').classList.remove('show'); }
 
-// ---------------- tool dock: pick a tool, then mark the page like a real pen ----------------
-let activeTool = 'none';
-function showToolHint(msg){
-  const hint = el('toolHint');
-  hint.textContent = msg;
-  hint.classList.add('show');
-  clearTimeout(showToolHint._t);
-  showToolHint._t = setTimeout(()=> hint.classList.remove('show'), 1800);
-}
-function setActiveTool(tool){
-  activeTool = tool;
-  document.querySelectorAll('#toolDock .tool-btn').forEach(b=> b.classList.toggle('active', b.dataset.tool===tool));
-  const textLayer = el('textLayer');
-  const inkLayer = el('inkLayer');
-  if (tool === 'pen'){
-    inkLayer.style.pointerEvents = 'auto';
-    textLayer.style.pointerEvents = 'none';
-    showToolHint('Draw on the page ✎');
-  } else if (tool === 'eraser'){
-    inkLayer.style.pointerEvents = 'auto';
-    textLayer.style.pointerEvents = 'auto';
-    showToolHint('Tap a mark to erase it');
-  } else if (tool === 'none'){
-    inkLayer.style.pointerEvents = 'none';
-    textLayer.style.pointerEvents = 'auto';
-  } else {
-    inkLayer.style.pointerEvents = 'none';
-    textLayer.style.pointerEvents = 'auto';
-    showToolHint(tool === 'underline' ? 'Drag over words to underline' : 'Drag over words to highlight');
-  }
-}
-document.querySelectorAll('#toolDock .tool-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=> setActiveTool(btn.dataset.tool));
-});
-
-// Selecting/dragging over text with a highlighter or underline tool active commits
-// the mark the instant you let go — no extra click on a color swatch needed,
-// since the color was already "loaded" by picking the tool first.
-function handleTextMarkGesture(){
-  const sel = window.getSelection();
-  if (!sel || sel.isCollapsed || !sel.toString().trim()) return;
-  if (activeTool === 'eraser'){ eraseHighlightsInSelection(sel); }
-  else if (activeTool === 'pink' || activeTool === 'mint' || activeTool === 'sky' || activeTool === 'underline'){
-    commitHighlightFromSelection(activeTool);
-  }
-}
-document.addEventListener('mouseup', (e)=>{
+let selCheckTimer = null;
+document.addEventListener('selectionchange', ()=>{
   if (!pdfDoc) return;
-  if (!el('textLayer').contains(e.target)) return;
-  if (activeTool === 'none' || activeTool === 'pen') return;
-  setTimeout(handleTextMarkGesture, 10);
+  clearTimeout(selCheckTimer);
+  selCheckTimer = setTimeout(()=>{
+    const sel = window.getSelection();
+    const textLayer = el('textLayer');
+    const sidebarOpen = window.innerWidth <= 780 && el('sidebar').classList.contains('open');
+    if (!sel || sel.isCollapsed || !sel.toString().trim() || !textLayer.contains(sel.anchorNode) || sidebarOpen){
+      hideHlPopup();
+      return;
+    }
+    el('hlPopup').classList.add('show');
+  }, 150);
 });
-document.addEventListener('touchend', (e)=>{
-  if (!pdfDoc) return;
-  if (!el('textLayer').contains(e.target)) return;
-  if (activeTool === 'none' || activeTool === 'pen') return;
-  setTimeout(handleTextMarkGesture, 250);
+document.querySelectorAll('.hl-swatch').forEach(sw=>{
+  sw.addEventListener('mousedown', ev=> ev.preventDefault());
+  sw.addEventListener('click', ()=> addHighlightFromSelection(sw.dataset.color));
 });
-
-// ---------------- freehand pen: real ink strokes drawn straight on the page ----------------
-function pointsToPathD(points){
-  if (!points.length) return '';
-  let d = `M ${points[0][0].toFixed(1)} ${points[0][1].toFixed(1)}`;
-  for (let i=1;i<points.length;i++) d += ` L ${points[i][0].toFixed(1)} ${points[i][1].toFixed(1)}`;
-  return d;
-}
-function penColorHex(){ return '#3A2E3F'; }
-let inkDrawing = false, inkPoints = [], livePathEl = null;
-const inkLayerEl = () => el('inkLayer');
-function getInkPoint(e){
-  const rect = inkLayerEl().getBoundingClientRect();
-  const t = e.touches && e.touches[0] ? e.touches[0] : e;
-  return [t.clientX - rect.left, t.clientY - rect.top];
-}
-function inkPointerDown(e){
-  if (activeTool !== 'pen') return;
-  inkDrawing = true;
-  inkPoints = [getInkPoint(e)];
-  livePathEl = document.createElementNS('http://www.w3.org/2000/svg','path');
-  livePathEl.setAttribute('fill','none');
-  livePathEl.setAttribute('stroke', penColorHex());
-  livePathEl.setAttribute('stroke-width','3');
-  livePathEl.setAttribute('stroke-linecap','round');
-  livePathEl.setAttribute('stroke-linejoin','round');
-  inkLayerEl().appendChild(livePathEl);
-  e.preventDefault();
-}
-function inkPointerMove(e){
-  if (!inkDrawing) return;
-  inkPoints.push(getInkPoint(e));
-  if (livePathEl) livePathEl.setAttribute('d', pointsToPathD(inkPoints));
-  e.preventDefault();
-}
-function inkPointerUp(){
-  if (!inkDrawing) return;
-  inkDrawing = false;
-  if (inkPoints.length >= 2){
-    const id = 'k' + Date.now() + Math.random().toString(36).slice(2,6);
-    state.ink = state.ink || {};
-    state.ink[state.currentPage] = state.ink[state.currentPage] || [];
-    state.ink[state.currentPage].push({ id, points: inkPoints });
-    saveBookState();
-  } else if (livePathEl){
-    livePathEl.remove();
-  }
-  livePathEl = null;
-  inkPoints = [];
-}
-el('inkLayer').addEventListener('mousedown', inkPointerDown);
-document.addEventListener('mousemove', inkPointerMove);
-document.addEventListener('mouseup', inkPointerUp);
-el('inkLayer').addEventListener('touchstart', inkPointerDown, { passive:false });
-el('inkLayer').addEventListener('touchmove', inkPointerMove, { passive:false });
-el('inkLayer').addEventListener('touchend', inkPointerUp);
-function renderInkForPage(pageNum){
-  const layer = inkLayerEl();
-  layer.innerHTML = '';
-  const strokes = (state.ink && state.ink[pageNum]) || [];
-  strokes.forEach(s=>{
-    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-    path.setAttribute('d', pointsToPathD(s.points));
-    path.setAttribute('fill','none');
-    path.setAttribute('stroke', penColorHex());
-    path.setAttribute('stroke-width','3');
-    path.setAttribute('stroke-linecap','round');
-    path.setAttribute('stroke-linejoin','round');
-    path.style.cursor = 'pointer';
-    path.addEventListener('click', ()=>{
-      if (activeTool !== 'eraser') return;
-      state.ink[pageNum] = state.ink[pageNum].filter(x=>x.id!==s.id);
-      saveBookState();
-      renderInkForPage(pageNum);
-    });
-    layer.appendChild(path);
-  });
-}
+document.addEventListener('mousedown', (e)=>{ if (!el('hlPopup').contains(e.target) && !el('textLayer').contains(e.target)) hideHlPopup(); });
 
 // ---------------- bookmarks & notes ----------------
 function isBookmarked(page){ return (state.bookmarks||[]).some(b=>b.page===page); }
@@ -1365,9 +1076,6 @@ document.querySelectorAll('.sidebar-tab').forEach(tab=>{
     renderSidebarTab();
   });
 });
-function highlightBorderClass(color){
-  return color==='pink' ? 'pink-b' : color==='mint' ? 'mint-b' : color==='sky' ? 'sky-b' : 'underline-b';
-}
 function renderSidebarTab(){
   if (!state) return;
   const body = el('sidebarBody');
@@ -1393,8 +1101,8 @@ function renderSidebarTab(){
   }
   else if (activeTab === 'highlights'){
     let html = '';
-    if (!state.highlights.length){ html = '<div class="empty-hint">No highlights yet. Select text on the page and pick a color, or the U button to underline.</div>'; }
-    else { state.highlights.forEach(h=>{ html += `<div class="item-card ${highlightBorderClass(h.color)}" data-page="${h.page}"><div class="item-page">Page ${h.page}</div><div class="item-text">${escapeHtml(h.text)}</div><button class="item-del" data-del="highlights" data-id="${h.id}">✕</button></div>`; }); }
+    if (!state.highlights.length){ html = '<div class="empty-hint">No highlights yet. Select text on the page and pick a color.</div>'; }
+    else { state.highlights.forEach(h=>{ html += `<div class="item-card ${h.color}-b" data-page="${h.page}"><div class="item-page">Page ${h.page}</div><div class="item-text">${escapeHtml(h.text)}</div><button class="item-del" data-del="highlights" data-id="${h.id}">✕</button></div>`; }); }
     body.innerHTML = html;
     body.querySelectorAll('.item-card').forEach(c=> c.addEventListener('click', (e)=>{ if(e.target.closest('.item-del')) return; goToPage(parseInt(c.dataset.page)); }));
     body.querySelectorAll('[data-del="highlights"]').forEach(btn=> btn.addEventListener('click', (e)=>{ e.stopPropagation(); deleteItem('highlights', btn.dataset.id); }));
@@ -1447,7 +1155,7 @@ el('dropzone').addEventListener('dragleave', ()=> el('dropzone').classList.remov
 el('dropzone').addEventListener('drop', (e)=>{ e.preventDefault(); el('dropzone').classList.remove('drag'); if (e.dataTransfer.files[0]) openFile(e.dataTransfer.files[0]); });
 
 // init
-checkStorageAvailability().then(renderShelf);
+renderShelf();
 </script>
 </body>
 </html>
