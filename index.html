@@ -215,10 +215,6 @@
   .mascot.mood-worried{animation:catSway 2.6s ease-in-out infinite;}
   .mascot.mood-sad{animation:none;}
   .mascot.mood-celebrate{animation:catBounce 0.7s ease-in-out infinite;}
-  .mascot.mood-excited{animation:catBounce 0.5s ease-in-out infinite;}
-  .mascot.mood-proud{animation:bob 3.2s ease-in-out infinite;}
-  .mascot.mood-thinking{animation:catSway 3.4s ease-in-out infinite;}
-  .mascot.mood-sleeping{animation:none;opacity:0.85;}
 
   .mood-card{
     display:flex;align-items:center;gap:14px;background:var(--panel);border:2px solid var(--line);
@@ -269,28 +265,6 @@
   .book-card-del{background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:15px;flex-shrink:0;padding:4px;}
   .book-card-del:hover{color:var(--pink-dark);}
   .finished-badge{font-size:18px;}
-
-  .settings-group{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:6px 14px;margin-bottom:16px;}
-  .settings-group-title{font-family:var(--serif);font-weight:700;font-size:14px;color:var(--ink);padding:12px 0 4px;}
-  .settings-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-top:1px solid var(--line);min-height:24px;}
-  .settings-group-title + .settings-row{border-top:none;}
-  .settings-row-label{font-size:13px;font-weight:700;color:var(--ink);}
-  .settings-row-value{font-size:12.5px;color:var(--ink-soft);font-weight:700;}
-  .settings-row-link{cursor:pointer;}
-  .settings-row-link:active{opacity:0.7;}
-  .settings-number{width:64px;padding:7px 8px;border-radius:10px;border:2px solid var(--line);font-family:var(--sans);font-weight:800;font-size:13px;text-align:center;}
-  .settings-select{padding:7px 10px;border-radius:10px;border:2px solid var(--line);font-family:var(--sans);font-weight:800;font-size:13px;background:#fff;color:var(--ink);}
-  .switch{position:relative;display:inline-block;width:44px;height:26px;flex-shrink:0;}
-  .switch input{opacity:0;width:0;height:0;}
-  .switch-track{position:absolute;inset:0;background:var(--line);border-radius:20px;cursor:pointer;transition:background .15s ease;}
-  .switch-track::before{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.3);transition:transform .15s ease;}
-  .switch input:checked + .switch-track{background:var(--mint);}
-  .switch input:checked + .switch-track::before{transform:translateX(18px);}
-  .switch input:focus-visible + .switch-track{outline:2px solid var(--sky);outline-offset:2px;}
-  .settings-danger{border-color:#F5C6D6;}
-  .heatmap-grid{display:grid;grid-template-columns:repeat(auto-fill, 11px);grid-auto-flow:column;gap:3px;overflow-x:auto;padding-bottom:6px;grid-template-rows:repeat(7, 11px);}
-  .heatmap-cell{width:11px;height:11px;border-radius:3px;background:var(--panel-2);cursor:pointer;}
-  .heatmap-cell:hover{outline:1.5px solid var(--pink-dark);}
 
   .fab{
     position:fixed;bottom:26px;right:26px;width:58px;height:58px;border-radius:50%;
@@ -375,7 +349,6 @@
     </div>
     <div class="book-meta" id="bookMeta" style="display:none;">
       <div class="book-title" id="bookTitleLabel">—</div>
-      <div class="book-title" id="readerTimerBadge" style="font-size:11px;color:var(--ink-soft);font-weight:800;"></div>
       <div class="progress-row">
         <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%;"></div></div>
         <div class="progress-pct" id="progressPct">0%</div>
@@ -383,8 +356,6 @@
     </div>
     <div class="topbar-actions">
       <button class="btn btn-ghost" id="libraryBtn" style="display:none;">🏠<span class="btn-label"> Shelf</span></button>
-      <button class="btn btn-ghost" id="insightsBtn" title="Reading Insights" aria-label="Reading Insights">📊<span class="btn-label"> Insights</span></button>
-      <button class="btn btn-ghost" id="settingsBtn" title="Settings" aria-label="Settings">⚙<span class="btn-label"> Settings</span></button>
       <button class="btn btn-ghost sidebar-toggle" id="sidebarToggle">✏️<span class="btn-label"> Marks</span></button>
       <button class="btn btn-pink" id="uploadBtn">📄<span class="btn-label"> Open PDF</span></button>
       <input type="file" id="fileInput" accept="application/pdf" />
@@ -415,91 +386,6 @@
         </div>
 
         <div id="shelfSections"></div>
-      </div>
-    </div>
-<!-- READING INSIGHTS VIEW -->
-    <div class="shelf" id="insightsPageView" style="display:none;">
-      <div class="shelf-inner">
-        <div class="section-title" style="margin-top:0;">📊 Reading Insights</div>
-        <div class="insights-card" style="text-align:center;">
-          <div id="insightsRingWrap"></div>
-          <div style="font-size:12.5px;color:var(--ink-soft);font-weight:700;margin-top:6px;" id="insightsRingLabel"></div>
-        </div>
-        <div class="insights-card">
-          <div class="insights-title">This Period</div>
-          <div class="insights-grid" id="insightsPeriodGrid"></div>
-        </div>
-        <div class="insights-card">
-          <div class="insights-title">Lifetime</div>
-          <div class="insights-grid" id="insightsLifetimeGrid"></div>
-        </div>
-        <div class="insights-card">
-          <div class="insights-title">🗓 Reading Calendar</div>
-          <div id="heatmapGrid" class="heatmap-grid"></div>
-          <div style="font-size:11px;color:var(--ink-soft);font-weight:700;margin-top:8px;">Tap a day to see pages read</div>
-        </div>
-      </div>
-    </div>
-
-    
-    <!-- SETTINGS VIEW -->
-    <div class="shelf" id="settingsView" style="display:none;">
-      <div class="shelf-inner">
-        <div class="section-title" style="margin-top:0;">⚙ Settings</div>
-
-        <div class="settings-group">
-          <div class="settings-group-title">📖 Reading</div>
-          <div class="settings-row">
-            <div class="settings-row-label">Daily Reading Goal</div>
-            <input type="number" min="1" class="settings-number" id="setGoalPages" />
-          </div>
-          <div class="settings-row">
-            <div class="settings-row-label">Default Zoom</div>
-            <select class="settings-select" id="setDefaultZoom">
-              <option value="1">100%</option>
-              <option value="1.5">150%</option>
-              <option value="2">200%</option>
-            </select>
-          </div>
-          <div class="settings-row">
-            <div class="settings-row-label">Default Reading Mode</div>
-            <label class="switch"><input type="checkbox" id="setDefaultReadMode"><span class="switch-track"></span></label>
-          </div>
-          <div class="settings-row">
-            <div class="settings-row-label">Show Reading Tips</div>
-            <label class="switch"><input type="checkbox" id="setShowTips"><span class="switch-track"></span></label>
-          </div>
-        </div>
-
-        <div class="settings-group">
-          <div class="settings-group-title">📚 Library</div>
-          <button class="sidebar-action" id="exportDataBtn" style="margin-bottom:8px;">⬇ Export Data</button>
-          <button class="sidebar-action" id="importDataBtn" style="margin-bottom:8px;">⬆ Import Data</button>
-          <input type="file" id="importFileInput" accept="application/json" style="display:none;" />
-          <button class="sidebar-action" id="resetProgressBtn" style="color:var(--sky-dark);">↺ Reset Reading Progress</button>
-        </div>
-
-        <div class="settings-group">
-          <div class="settings-group-title">🐱 Mochi</div>
-          <div class="settings-row"><div class="settings-row-label">Enable Mascot</div><label class="switch"><input type="checkbox" id="setEnableMascot"><span class="switch-track"></span></label></div>
-          <div class="settings-row"><div class="settings-row-label">Enable Celebrations</div><label class="switch"><input type="checkbox" id="setEnableCelebrations"><span class="switch-track"></span></label></div>
-          <div class="settings-row"><div class="settings-row-label">Enable Motivational Messages</div><label class="switch"><input type="checkbox" id="setEnableMotivational"><span class="switch-track"></span></label></div>
-          <div class="settings-row"><div class="settings-row-label">Enable Sounds</div><label class="switch"><input type="checkbox" id="setEnableSounds"><span class="switch-track"></span></label></div>
-        </div>
-
-        <div class="settings-group">
-          <div class="settings-group-title">ℹ About</div>
-          <div class="settings-row"><div class="settings-row-label">Version</div><div class="settings-row-value">1.0.0</div></div>
-          <div class="settings-row settings-row-link" id="aboutRoadmap"><div class="settings-row-label">Roadmap</div><div class="settings-row-value">›</div></div>
-          <div class="settings-row settings-row-link" id="aboutReportBug"><div class="settings-row-label">Report Bug</div><div class="settings-row-value">›</div></div>
-          <div class="settings-row settings-row-link" id="aboutFeedback"><div class="settings-row-label">Send Feedback</div><div class="settings-row-value">›</div></div>
-          <div class="settings-row settings-row-link" id="aboutPrivacy"><div class="settings-row-label">Privacy Policy</div><div class="settings-row-value">›</div></div>
-        </div>
-
-        <div class="settings-group settings-danger">
-          <div class="settings-group-title">⚠ Danger Zone</div>
-          <button class="sidebar-action" id="resetEverythingBtn" style="border-color:var(--pink-dark);color:var(--pink-dark);">Reset Everything</button>
-        </div>
       </div>
     </div>
 
@@ -570,10 +456,6 @@
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 4h13l3 3v13H4V4z"/><path d="M16 4v4h4"/></svg>
         <span>Sticky note</span>
       </button>
-      <button class="tool-menu-item" data-tool="none" title="Read Mode — reading, scrolling, zoom and pan only">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M2 5.5C4 4 8 3.5 12 5.5C16 3.5 20 4 22 5.5V19C20 17.5 16 17 12 19C8 17 4 17.5 2 19V5.5Z"/><path d="M12 5.5V19"/></svg>
-        <span>Read Mode</span>
-      </button>
       <button class="tool-menu-item" data-tool="eraser" title="Eraser — tap a mark to remove it">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M18 13l-6.5 6.5a2 2 0 0 1-2.8 0L4 15l9-9 6.5 6.5a1 1 0 0 1 0 1.4z"/><path d="M9 20h9"/></svg>
         <span>Eraser</span>
@@ -604,19 +486,6 @@
     </div>
   </div>
 
-  <div class="modal-scrim" id="dangerModalScrim">
-    <div class="modal">
-      <h2 id="dangerTitle">⚠ Reset Everything</h2>
-      <p class="sub" id="dangerBody" style="font-weight:700;line-height:1.6;"></p>
-      <label>Type <strong>RESET</strong> to confirm</label>
-      <input type="text" id="dangerConfirmInput" placeholder="RESET" autocomplete="off" autocapitalize="characters" />
-      <div class="modal-actions">
-        <button class="btn btn-ghost" id="dangerCancel">Cancel</button>
-        <button class="btn btn-pink" id="dangerDelete" disabled style="opacity:0.5;">Delete</button>
-      </div>
-    </div>
-  </div>
-
   <div class="celebrate-scrim" id="celebrateScrim">
     <div class="celebrate-card" id="celebrateCard">
       <div id="mascotCelebrate"></div>
@@ -626,18 +495,6 @@
       <div class="modal-actions" style="margin-top:0;">
         <button class="btn btn-ghost" id="celebrateContinueBtn" style="display:none;">Continue Reading</button>
         <button class="btn btn-pink" id="celebrateClose">Yay, thanks!</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-scrim" id="welcomeModalScrim">
-    <div class="modal" style="text-align:center;max-width:320px;">
-      <div id="mascotWelcome" style="display:flex;justify-content:center;margin-bottom:10px;"></div>
-      <h2 style="margin-bottom:6px;">Welcome to Marginalia</h2>
-      <p class="sub" style="margin-bottom:4px;font-weight:700;">Meet Mochi 🐱</p>
-      <p class="sub" style="line-height:1.6;">A little reading companion that celebrates your progress.</p>
-      <div class="modal-actions">
-        <button class="btn btn-pink" id="welcomeContinueBtn" style="flex:none;width:100%;">Continue</button>
       </div>
     </div>
   </div>
@@ -663,36 +520,25 @@ function mascotHTML(opts){
   const earRotate = mood === 'sad' ? -8 : (mood === 'worried' ? -3 : 0);
   const bodyTilt = mood === 'sad' ? -3 : (mood === 'celebrate' ? 2 : 0);
 
- const eyes = {
+  const eyes = {
     happy:     `<circle cx="38" cy="47" r="3.4" fill="#3A2E3F"/><circle cx="62" cy="47" r="3.4" fill="#3A2E3F"/><circle cx="39.3" cy="45.6" r="1.1" fill="#fff"/><circle cx="63.3" cy="45.6" r="1.1" fill="#fff"/>`,
     worried:   `<circle cx="38" cy="48" r="3" fill="#3A2E3F"/><circle cx="62" cy="48" r="3" fill="#3A2E3F"/><path d="M33.5 41 Q38 38 42.5 41" stroke="#3A2E3F" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M57.5 41 Q62 38 66.5 41" stroke="#3A2E3F" stroke-width="2" fill="none" stroke-linecap="round"/>`,
     sad:       `<path d="M34 48 Q38 45 42 48" stroke="#3A2E3F" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M58 48 Q62 45 66 48" stroke="#3A2E3F" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
-    celebrate: `<path d="M33.5 47 Q38 42 42.5 47" stroke="#3A2E3F" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M57.5 47 Q62 42 66.5 47" stroke="#3A2E3F" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
-    thinking:  `<circle cx="38" cy="47" r="3" fill="#3A2E3F"/><circle cx="62" cy="47" r="3" fill="#3A2E3F"/><path d="M56 40 Q62 37 68 40" stroke="#3A2E3F" stroke-width="2" fill="none" stroke-linecap="round"/>`,
-    excited:   `<path d="M33.5 46 Q38 40 42.5 46" stroke="#3A2E3F" stroke-width="2.8" fill="none" stroke-linecap="round"/><path d="M57.5 46 Q62 40 66.5 46" stroke="#3A2E3F" stroke-width="2.8" fill="none" stroke-linecap="round"/>`,
-    proud:     `<path d="M34 47 Q38 44 42 47" stroke="#3A2E3F" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M58 47 Q62 44 66 47" stroke="#3A2E3F" stroke-width="2.4" fill="none" stroke-linecap="round"/>`,
-    sleeping:  `<path d="M34 48 L42 48" stroke="#3A2E3F" stroke-width="2.4" stroke-linecap="round"/><path d="M58 48 L66 48" stroke="#3A2E3F" stroke-width="2.4" stroke-linecap="round"/>`
+    celebrate: `<path d="M33.5 47 Q38 42 42.5 47" stroke="#3A2E3F" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M57.5 47 Q62 42 66.5 47" stroke="#3A2E3F" stroke-width="2.6" fill="none" stroke-linecap="round"/>`
   };
   const mouth = {
     happy:     `<path d="M50 52 L50 55" stroke="#3A2E3F" stroke-width="1.6" stroke-linecap="round"/><path d="M50 55 Q45 58 41 55" stroke="#3A2E3F" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M50 55 Q55 58 59 55" stroke="#3A2E3F" stroke-width="1.6" fill="none" stroke-linecap="round"/>`,
     worried:   `<path d="M45 55 Q50 53 55 55" stroke="#3A2E3F" stroke-width="1.8" fill="none" stroke-linecap="round"/>`,
     sad:       `<path d="M44 57 Q50 52 56 57" stroke="#3A2E3F" stroke-width="1.8" fill="none" stroke-linecap="round"/>`,
-    celebrate: `<path d="M42 53 Q50 61 58 53" stroke="#3A2E3F" stroke-width="1.8" fill="#fff" stroke-linecap="round"/>`,
-    thinking:  `<path d="M45 56 Q50 55 54 56" stroke="#3A2E3F" stroke-width="1.6" fill="none" stroke-linecap="round"/>`,
-    excited:   `<path d="M41 53 Q50 62 59 53" stroke="#3A2E3F" stroke-width="1.8" fill="#fff" stroke-linecap="round"/>`,
-    proud:     `<path d="M43 54 Q50 58 57 54" stroke="#3A2E3F" stroke-width="1.8" fill="none" stroke-linecap="round"/>`,
-    sleeping:  `<path d="M47 56 Q50 57 53 56" stroke="#3A2E3F" stroke-width="1.4" fill="none" stroke-linecap="round"/>`
+    celebrate: `<path d="M42 53 Q50 61 58 53" stroke="#3A2E3F" stroke-width="1.8" fill="#fff" stroke-linecap="round"/>`
   };
   const extra = {
-    happy: '', worried: '', thinking: '', proud: '',
+    happy: '', worried: '',
     sad: `<path d="M68 43 Q71 48 68 52 Q65 48 68 43 Z" fill="#5FB6F2" opacity="0.9"/>`,
-    celebrate: `<g class="mascot-sparkle-a"><path d="M18 20 L20 25 L25 27 L20 29 L18 34 L16 29 L11 27 L16 25 Z" fill="#FFC94D"/></g>`,
-    excited: `<g class="mascot-sparkle-a"><path d="M78 22 L80 27 L85 29 L80 31 L78 36 L76 31 L71 29 L76 27 Z" fill="#FFC94D"/></g>`,
-    sleeping: `<text x="72" y="30" font-size="13" font-family="sans-serif" fill="#8B7A93">z z</text>`
+    celebrate: `<g class="mascot-sparkle-a"><path d="M18 20 L20 25 L25 27 L20 29 L18 34 L16 29 L11 27 L16 25 Z" fill="#FFC94D"/></g>`
   };
 
-  const safeMood = eyes[mood] ? mood : 'happy'; // graceful fallback if an unknown mood string is ever passed in
-  return `<div class="mascot mood-${safeMood}" style="width:${size}px;height:${size}px;">
+  return `<div class="mascot mood-${mood}" style="width:${size}px;height:${size}px;">
     <svg width="${size}" height="${size}" viewBox="0 0 100 98" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="${uid}fur" x1="0" y1="0" x2="0" y2="1">
@@ -987,12 +833,6 @@ function ensureStreakDefaults(streak){
   if (typeof streak.goalsCompletedCount !== 'number') streak.goalsCompletedCount = 0;
   if (!streak.streakBadgesShown || typeof streak.streakBadgesShown !== 'object') streak.streakBadgesShown = {};
   if (typeof streak.lastAppOpenDate !== 'string') streak.lastAppOpenDate = null;
-  // Feature 4/12: session & time tracking
-  if (!streak.dailyReadingSeconds || typeof streak.dailyReadingSeconds !== 'object') streak.dailyReadingSeconds = {};
-  if (typeof streak.totalReadingSeconds !== 'number') streak.totalReadingSeconds = 0;
-  if (typeof streak.sessionCount !== 'number') streak.sessionCount = 0;
-  if (typeof streak.longestSessionSeconds !== 'number') streak.longestSessionSeconds = 0;
-  if (!Array.isArray(streak.chapterToastsShown)) streak.chapterToastsShown = [];
   const today = todayStr(0);
   if (streak.lastGoalDate !== today){
     // date changed since we last checked — reset everything the daily goal cares about
@@ -1041,35 +881,6 @@ const ACHIEVEMENTS = {
   firstUnderline: { emoji:'✍', label:'First Underline' },
   goalCrusher:    { emoji:'🎯', label:'Goal Crusher (10 daily goals)' }
 };
-  const SETTINGS_DEFAULTS = {
-  defaultZoom: 1,
-  defaultReadMode: true,
-  showReadingTips: true,
-  enableMascot: true,
-  enableCelebrations: true,
-  enableMotivationalMessages: true,
-  enableSounds: false
-};
-async function loadSettings(){
-  try{
-    const res = await window.storage.get('settings', false);
-    if (res && res.value) return Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(res.value));
-  }catch(e){}
-  return Object.assign({}, SETTINGS_DEFAULTS);
-}
-async function saveSettings(s){
-  try{ await storageSetWithRetry('settings', JSON.stringify(s), false); return true; }
-  catch(e){ showToast("Couldn't save settings — Retry"); return false; }
-}
-async function loadOnboardingSeen(){
-  try{
-    const res = await window.storage.get('onboarding-seen', false);
-    return !!(res && res.value === '1');
-  }catch(e){ return false; }
-}
-async function markOnboardingSeen(){
-  try{ await storageSetWithRetry('onboarding-seen', '1', false); }catch(e){}
-}
 // Page turns happen fast — flipping through a chapter used to fire a get+set to the
 // streak key on EVERY single page. That's now batched in memory and flushed on the
 // same debounce as the book save, so a quick flip-through costs one write, not N.
@@ -1173,8 +984,6 @@ function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; 
 async function updateReaderMascot(){
   const bubble = el('readerMascot');
   if (!bubble || bubble.style.display === 'none') return;
-  const settings = await loadSettings();
-  if (!settings.enableMascot){ bubble.style.display = 'none'; return; }
   const streak = await loadStreak();
   const today = todayStr(0);
   const yesterday = todayStr(-1);
@@ -1314,13 +1123,11 @@ async function renderShelf(){
   if (reading.length){
     html += `<div class="section-title">📖 Currently reading <span class="count">${reading.length}</span></div>`;
     reading.forEach(b => html += bookCardHtml(b, 'reading'));
-  } else if (!wishlist.length && !finished.length){
-    html += '<div class="empty-hint">No books yet.<br>Import your first PDF.</div>';
   }
 
   html += `<div class="section-title">📝 Want to read <span class="count">${wishlist.length}</span></div>`;
   if (!wishlist.length){
-    html += '<div class="empty-hint">Save books you want to read.<br>Tap the pink + button to add one.</div>';
+    html += '<div class="empty-hint">Tap the pink + button to add books you\'re planning to read.</div>';
   } else {
     wishlist.forEach(w => html += wishlistCardHtml(w));
   }
@@ -1495,63 +1302,11 @@ function enterReader(){
   el('bookTitleLabel').textContent = state.title;
   el('numPagesLabel').textContent = state.numPages;
   renderSidebarTab();
-  startReadingTimer();
 }
-
-// ---------------- reading timer (Feature 4 & 12) ----------------
-let sessionStartedAt = null;
-let sessionAccumSeconds = 0; // seconds already flushed to storage this session
-let timerDisplayInterval = null;
-function startReadingTimer(){
-  if (sessionStartedAt) return; // already running
-  sessionStartedAt = Date.now();
-  sessionAccumSeconds = 0;
-  clearInterval(timerDisplayInterval);
-  timerDisplayInterval = setInterval(updateTimerDisplay, 1000);
-  updateTimerDisplay();
-}
-async function pauseReadingTimer(){
-  if (!sessionStartedAt) return;
-  const elapsed = Math.floor((Date.now() - sessionStartedAt) / 1000);
-  sessionStartedAt = null;
-  clearInterval(timerDisplayInterval);
-  timerDisplayInterval = null;
-  if (elapsed <= 0) return;
-  const streak = await loadStreak();
-  const today = todayStr(0);
-  streak.dailyReadingSeconds[today] = (streak.dailyReadingSeconds[today]||0) + elapsed;
-  streak.totalReadingSeconds = (streak.totalReadingSeconds||0) + elapsed;
-  streak.sessionCount = (streak.sessionCount||0) + 1;
-  streak.longestSessionSeconds = Math.max(streak.longestSessionSeconds||0, elapsed);
-  const dayKeys = Object.keys(streak.dailyReadingSeconds).sort();
-  if (dayKeys.length > 400){ dayKeys.slice(0, dayKeys.length-400).forEach(k=> delete streak.dailyReadingSeconds[k]); }
-  await saveStreak(streak);
-}
-function formatDuration(totalSeconds){
-  const h = Math.floor(totalSeconds/3600), m = Math.floor((totalSeconds%3600)/60), s = totalSeconds%60;
-  if (h > 0) return `${h}h ${m}m`;
-  if (m > 0) return `${m}m ${s}s`;
-  return `${s}s`;
-}
-function updateTimerDisplay(){
-  const badge = el('readerTimerBadge');
-  if (!badge || !sessionStartedAt) return;
-  const elapsed = Math.floor((Date.now() - sessionStartedAt) / 1000);
-  badge.textContent = '⏱ ' + formatDuration(elapsed);
-}
-document.addEventListener('visibilitychange', ()=>{
-  if (document.hidden){ pauseReadingTimer(); }
-  else if (state && el('readerViewport').style.display !== 'none'){ startReadingTimer(); }
-});
-window.addEventListener('beforeunload', ()=>{ pauseReadingTimer(); });
-async function triggerMascotWave(){
-  const settings = await loadSettings();
-  if (!settings.enableMascot) return;
-  showToast("📖 Let's continue!");
+function triggerMascotWave(){
+  showToast('👋 Happy reading!');
   const bubble = el('readerMascot');
   if (!bubble) return;
-  bubble.innerHTML = mascotHTML({ size: bubble.clientWidth || 52, mood:'excited', reading:true });
-  setTimeout(()=>{ if (!document.hidden) updateReaderMascot(); }, 1400); // settle back to the real mood shortly after
   const m = bubble.querySelector('.mascot');
   if (!m) return;
   m.style.animation = 'catSway 0.5s ease-in-out 2'; // reuses the existing catSway keyframe
@@ -1559,7 +1314,6 @@ async function triggerMascotWave(){
 }
 
 function returnToShelf(){
-  pauseReadingTimer();
   el('readerViewport').style.display = 'none';
   el('spine').style.display = 'none';
   el('sidebar').style.display = 'none';
@@ -1645,16 +1399,6 @@ async function goToPage(num, skipSave){
     showToast("Halfway there! 📚 Keep going");
   }
 
-  // Feature 6: warm, in-app-only reminders — each shown once per book via chapterToastsShown
-  const pagesLeft = state.numPages - num;
-  if (pagesLeft > 0 && pagesLeft <= 12 && state.numPages > 15){
-    if (!state.almostDoneShown){
-      state.almostDoneShown = true;
-      saveBookState();
-      showToast(`Only ${pagesLeft} pages left 📖`);
-    }
-  }
-
   if (num >= state.numPages && !wasFinished){
     state.celebrated = true;
     saveBookState();
@@ -1680,72 +1424,7 @@ function updateSpine(){
 }
 
 // ---------------- celebration ----------------
-// Feature 2: one reusable danger-confirmation component shared by "Reset Everything"
-// and "Reset Reading Progress" — the Delete button only enables on an exact "RESET" match.
-function openDangerModal({ title, body, onConfirm }){
-  el('dangerTitle').textContent = title;
-  el('dangerBody').textContent = body;
-  const input = el('dangerConfirmInput');
-  const delBtn = el('dangerDelete');
-  input.value = '';
-  delBtn.disabled = true;
-  delBtn.style.opacity = '0.5';
-  el('dangerModalScrim').classList.add('show');
-  setTimeout(()=> input.focus(), 50);
-
-  function onInput(){
-    const match = input.value.trim() === 'RESET';
-    delBtn.disabled = !match;
-    delBtn.style.opacity = match ? '1' : '0.5';
-  }
-  function closeModal(){
-    el('dangerModalScrim').classList.remove('show');
-    input.removeEventListener('input', onInput);
-    delBtn.removeEventListener('click', onConfirmClick);
-    cancelBtn.removeEventListener('click', closeModal);
-  }
-  function onConfirmClick(){
-    if (input.value.trim() !== 'RESET') return;
-    closeModal();
-    onConfirm();
-  }
-  const cancelBtn = el('dangerCancel');
-  input.addEventListener('input', onInput);
-  delBtn.addEventListener('click', onConfirmClick);
-  cancelBtn.addEventListener('click', closeModal);
-}
-
-async function resetReadingProgress(){
-  // Scope: streak/goal/pages-read data only — books, bookmarks, highlights, wishlist,
-  // achievements and settings are untouched, matching "Reset Reading Progress" (narrower
-  // than "Reset Everything").
-  try{
-    await window.storage.delete('streak', false);
-  }catch(e){}
-  showToast('Reading progress reset');
-  renderMoodCard();
-  renderInsights();
-  updateReaderMascot();
-}
-
-async function resetEverything(){
-  try{
-    const idx = await loadLibraryIndex();
-    const keysToDelete = Object.keys(idx)
-      .concat(['library-index','wishlist','streak','achievements','settings','onboarding-seen']);
-    for (const k of keysToDelete){
-      try{ await window.storage.delete(k, false); }catch(e){ /* key may not exist */ }
-    }
-  }catch(e){
-    showToast("Couldn't reset — Retry");
-    return;
-  }
-  showToast('Everything reset');
-  setTimeout(()=> window.location.reload(), 600);
-}
-
 const MOTIVATIONAL_QUOTES = [
-  const MOTIVATIONAL_QUOTES = [
   'Small progress every day becomes massive growth.',
   'Your future self is smiling.',
   'Books compound like money.',
@@ -1755,11 +1434,8 @@ const MOTIVATIONAL_QUOTES = [
   "Today's reading is tomorrow's advantage.",
   "Keep going.\nYou're building something incredible."
 ];
-async function launchCelebration(config){
-  const settings = await loadSettings();
-  if (!settings.enableCelebrations) return; // respects Settings → Mochi → Enable Celebrations
+function launchCelebration(config){
   config = config || {};
-  if (!settings.enableMotivationalMessages) config.showQuote = false;
   const mood = config.mascotMood || 'celebrate';
   el('celebrateTitle').textContent = config.title || 'You finished it! 🎉';
   el('celebrateSubtitle').textContent = config.subtitle || "That's one more book on your shelf. Nicely done.";
@@ -1817,19 +1493,6 @@ function showStreakBadgeCelebration(badge){
 // ---------------- tool FAB: tap to open a menu, pick a tool, then mark the page ----------------
 let activeTool = 'none';
 const TOOL_BADGE_COLOR = { pink:'#FF6FA8', mint:'#3FCBA8', sky:'#5FB6F2', underline:'#3A2E3F', pen:'#3A2E3F', note:'#FFC94D', eraser:'#8B7A93' };
-
-// Public tool API (Feature 3). This does NOT introduce a second tool-state — it's a thin
-// alias layer over the existing single `activeTool` variable and `setActiveTool()`, so
-// there is exactly one source of truth. 'read' maps to the existing 'none' (read mode).
-const TOOL_ALIASES = { read:'none', highlight:'pink', pen:'pen', underline:'underline', sticky:'note', eraser:'eraser', none:'none' };
-function setTool(name){
-  const internal = TOOL_ALIASES.hasOwnProperty(name) ? TOOL_ALIASES[name] : name;
-  setActiveTool(internal);
-}
-function getTool(){
-  const rev = { none:'read', pink:'highlight', mint:'highlight', sky:'highlight', pen:'pen', underline:'underline', note:'sticky', eraser:'eraser' };
-  return rev[activeTool] || activeTool;
-}
 function showToolHint(msg){
   const hint = el('toolHint');
   hint.textContent = msg;
@@ -1842,10 +1505,6 @@ function closeToolMenus(){
   el('toolMenuColors').classList.remove('open');
 }
 function setActiveTool(tool){
-  // Always resets both layers' pointer-events synchronously on every switch, regardless
-  // of what the previous tool was — this is the hardening fix for Feature 6: no state
-  // from a previous tool (e.g. notesLayer left interactive after Sticky) can survive
-  // a switch to Eraser or any other tool.
   activeTool = tool;
   const inkLayer = el('inkLayer');
   const notesLayer = el('notesLayer');
@@ -2167,7 +1826,7 @@ function renderSidebarTab(){
   else if (activeTab === 'notes'){
     let html = `<textarea class="note-input" id="noteInput" placeholder="Write a note about page ${state.currentPage}…"></textarea>
       <button class="sidebar-action" id="noteAddBtn">+ Add note on this page</button>`;
-    if (!state.notes.length){ html += '<div class="empty-hint">Capture your first idea.</div>'; }
+    if (!state.notes.length){ html += '<div class="empty-hint">No notes yet. Jot down thoughts as you read.</div>'; }
     else { state.notes.forEach(n=>{ html += `<div class="item-card" data-page="${n.page}"><div class="item-page">Page ${n.page}</div><div class="item-text">${escapeHtml(n.text)}</div><button class="item-del" data-del="notes" data-id="${n.id}">✕</button></div>`; }); }
     body.innerHTML = html;
     el('noteAddBtn').addEventListener('click', ()=> addNote(el('noteInput').value));
@@ -2179,7 +1838,7 @@ function renderSidebarTab(){
     const ink = state.ink || {};
     const pages = Object.keys(ink).map(Number).filter(p => (ink[p]||[]).some(s => s.kind !== 'pen')).sort((a,b)=>a-b);
     let html = '';
-    if (!pages.length){ html = '<div class="empty-hint">Nothing highlighted yet.<br>Pick a color from the tool menu and drag anywhere on the page.</div>'; }
+    if (!pages.length){ html = '<div class="empty-hint">No highlights or underlines yet. Pick a color from the tool menu and drag anywhere on the page.</div>'; }
     else {
       pages.forEach(p=>{
         const strokes = ink[p].filter(s=>s.kind!=='pen');
@@ -2207,17 +1866,14 @@ function renderSidebarTab(){
 }
 
 // ---------------- nav controls ----------------
-// Feature 5: navigation must ALWAYS work regardless of active tool. goToPage() already
-// saves+reloads annotations on every call (saveBookState / renderInkForPage /
-// renderStickyNotesForPage), so switching pages mid-tool is already safe — no extra
-// save step is needed here.
-el('prevBtn').addEventListener('click', ()=> goToPage(state.currentPage - 1));
-el('nextBtn').addEventListener('click', ()=> goToPage(state.currentPage + 1));
-el('pageInput').addEventListener('keydown', (e)=>{ if (e.key==='Enter'){ goToPage(parseInt(e.target.value)||1); e.target.blur(); } });
+el('prevBtn').addEventListener('click', ()=>{ if (isBrushTool(activeTool)) return; goToPage(state.currentPage - 1); });
+el('nextBtn').addEventListener('click', ()=>{ if (isBrushTool(activeTool)) return; goToPage(state.currentPage + 1); });
+el('pageInput').addEventListener('keydown', (e)=>{ if (e.key==='Enter'){ if (!isBrushTool(activeTool)) goToPage(parseInt(e.target.value)||1); e.target.blur(); } });
 document.addEventListener('keydown', (e)=>{
   if (!state) return;
   const tag = (e.target.tagName||'').toLowerCase();
   if (tag==='textarea' || tag==='input') return;
+  if (isBrushTool(activeTool)) return;
   if (e.key==='ArrowRight' || e.key==='PageDown') goToPage(state.currentPage+1);
   if (e.key==='ArrowLeft' || e.key==='PageUp') goToPage(state.currentPage-1);
 });
@@ -2254,10 +1910,9 @@ function pinchDistance(touches){
   return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
 }
 function canPanOneFinger(){
-  // Touch priority (Feature 9): one finger only pans in Read Mode ('none'/'read') while
-  // zoomed in — never while a drawing/note/eraser tool is selected, so gestures can
-  // never conflict. Uses the same single activeTool source of truth as everything else.
-  return getTool() === 'read' && pdfZoom > 1.02;
+  // Touch priority: one finger only pans in Read Mode while zoomed in — never while a
+  // drawing/note tool is selected, so gestures can never conflict.
+  return activeTool === 'none' && pdfZoom > 1.02;
 }
 
 el('readerViewport').addEventListener('touchstart', (e)=>{
@@ -2316,17 +1971,13 @@ el('readerViewport').addEventListener('touchend', (e)=>{
     lastTapTime = now; lastTapX = e.changedTouches[0].clientX; lastTapY = e.changedTouches[0].clientY;
   }
 
-  // Feature 5 + 9 + 10: navigation buttons/keys always work regardless of tool. The ONE
-  // thing that must still be blocked is a swipe gesture that was actually a drawing
-  // stroke or a note being placed with this same finger — checked here by finger
-  // behavior (inkDrawing/panActive), not by tool identity, so nav is never blanket-disabled.
-  if (inkDrawing || (panActive && panMoved)) return;
+  // No page-turn swipe while a drawing tool is active, a note is being placed, or the page is zoomed in
   if (isBrushTool(activeTool) || activeTool === 'eraser' || activeTool === 'note') return;
   if (pdfZoom > 1.05) return;
   if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy)*1.5){ if (dx < 0) goToPage(state.currentPage+1); else goToPage(state.currentPage-1); }
 });
 el('spine').addEventListener('click', (e)=>{
-  if (!state) return;
+  if (!state || isBrushTool(activeTool)) return;
   const rect = el('spine').getBoundingClientRect();
   const frac = (e.clientY - rect.top) / rect.height;
   goToPage(Math.round(frac * state.numPages) + 1);
@@ -2348,282 +1999,19 @@ el('sidebarScrim').addEventListener('click', ()=>{ el('sidebar').classList.remov
 
 el('libraryBtn').addEventListener('click', returnToShelf);
 
-function enterSettings(){
-  el('shelfView').style.display = 'none';
-  el('readerViewport').style.display = 'none';
-  el('spine').style.display = 'none';
-  el('sidebar').style.display = 'none';
-  el('pageNav').style.display = 'none';
-  el('bookMeta').style.display = 'none';
-  el('toolFabWrap').style.display = 'none';
-  el('readerMascot').style.display = 'none';
-  el('fabAdd').style.display = 'none';
-  el('libraryBtn').style.display = 'inline-flex';
-  el('settingsView').style.display = 'flex';
-  populateSettingsForm();
-}
-function exitSettingsToShelf(){
-  el('settingsView').style.display = 'none';
-  el('libraryBtn').style.display = 'none';
-  el('shelfView').style.display = 'flex';
-  el('fabAdd').style.display = 'flex';
-  renderShelf();
-}
-async function populateSettingsForm(){
-  const settings = await loadSettings();
-  const streak = await loadStreak();
-  el('setGoalPages').value = streak.goalPages || 10;
-  el('setDefaultZoom').value = String(settings.defaultZoom);
-  el('setDefaultReadMode').checked = !!settings.defaultReadMode;
-  el('setShowTips').checked = !!settings.showReadingTips;
-  el('setEnableMascot').checked = !!settings.enableMascot;
-  el('setEnableCelebrations').checked = !!settings.enableCelebrations;
-  el('setEnableMotivational').checked = !!settings.enableMotivationalMessages;
-  el('setEnableSounds').checked = !!settings.enableSounds;
-}
-async function persistSettingField(patch){
-  const settings = await loadSettings();
-  Object.assign(settings, patch);
-  await saveSettings(settings);
-  return settings;
-}
-el('settingsBtn').addEventListener('click', enterSettings);
-el('insightsBtn').addEventListener('click', enterInsightsPage);
-
-function exitInsightsToShelf(){
-  el('insightsPageView').style.display = 'none';
-  el('libraryBtn').style.display = 'none';
-  el('shelfView').style.display = 'flex';
-  el('fabAdd').style.display = 'flex';
-  renderShelf();
-}
-async function enterInsightsPage(){
-  el('shelfView').style.display = 'none';
-  el('readerViewport').style.display = 'none';
-  el('spine').style.display = 'none';
-  el('sidebar').style.display = 'none';
-  el('pageNav').style.display = 'none';
-  el('bookMeta').style.display = 'none';
-  el('toolFabWrap').style.display = 'none';
-  el('readerMascot').style.display = 'none';
-  el('fabAdd').style.display = 'none';
-  el('libraryBtn').style.display = 'inline-flex';
-  el('insightsPageView').style.display = 'flex';
-  await renderInsightsPage();
-}
-function renderProgressRing(pct, size){
-  size = size || 120;
-  const r = (size/2) - 10;
-  const circ = 2 * Math.PI * r;
-  const offset = circ * (1 - Math.min(100,pct)/100);
-  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--line)" stroke-width="9"/>
-    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="url(#ringGrad)" stroke-width="9"
-      stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${offset}"
-      transform="rotate(-90 ${size/2} ${size/2})"/>
-    <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#FF6FA8"/><stop offset="100%" stop-color="#FFC94D"/>
-    </linearGradient></defs>
-    <text x="${size/2}" y="${size/2+6}" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="20" fill="var(--ink)">${Math.round(pct)}%</text>
-  </svg>`;
-}
-function heatmapColor(pages, goal){
-  if (!pages) return 'var(--panel-2)';
-  const ratio = pages / Math.max(1, goal);
-  if (ratio >= 1) return '#E8508C';
-  if (ratio >= 0.6) return '#FF6FA8';
-  if (ratio >= 0.3) return '#FFB6D2';
-  return '#FFE1EE';
-}
-async function renderInsightsPage(){
-  const streak = await loadStreak();
-  const library = await listLibrary();
-  const today = todayStr(0);
-
-  const weekKeys = []; for (let i=6;i>=0;i--) weekKeys.push(todayStr(-i));
-  const monthKeys = []; for (let i=29;i>=0;i--) monthKeys.push(todayStr(-i));
-  const weeklyPages = weekKeys.reduce((s,k)=> s + ((streak.history||{})[k]||0), 0);
-  const monthlyPages = monthKeys.reduce((s,k)=> s + ((streak.history||{})[k]||0), 0);
-  const todaysPages = streak.visitedPagesToday ? streak.visitedPagesToday.length : ((streak.history||{})[today]||0);
-  const finishedCount = library.filter(b=> b.numPages && b.currentPage >= b.numPages).length;
-  const historyDays = Object.keys(streak.history||{}).length || 1;
-  const totalHistoryPages = Object.values(streak.history||{}).reduce((a,b)=>a+b,0);
-  const avgPerDay = Math.round(totalHistoryPages / historyDays);
-  const goal = streak.goalPages || 10;
-  const goalPct = Math.min(100, Math.round((todaysPages/goal)*100));
-
-  const current = library.slice().sort((a,b)=>(b.lastOpened||0)-(a.lastOpened||0))[0];
-  const currentPagesLeft = current && current.numPages ? Math.max(0, current.numPages - current.currentPage) : 0;
-  const estMinutesLeft = (avgPerDay > 0 && streak.totalReadingSeconds > 0 && streak.totalPagesRead > 0)
-    ? Math.round((currentPagesLeft * (streak.totalReadingSeconds / streak.totalPagesRead)) / 60)
-    : null;
-  const mostRead = library.slice().sort((a,b)=>(b.currentPage||0)-(a.currentPage||0))[0];
-
-  el('insightsRingWrap').innerHTML = renderProgressRing(goalPct, 120);
-  el('insightsRingLabel').textContent = `Today's Goal · ${todaysPages}/${goal} pages`;
-
-  el('insightsPeriodGrid').innerHTML = `
-    <div class="insight-stat"><div class="n">${todaysPages}</div><div class="l">Today's Reading</div></div>
-    <div class="insight-stat"><div class="n">${weeklyPages}</div><div class="l">Weekly Reading</div></div>
-    <div class="insight-stat"><div class="n">${monthlyPages}</div><div class="l">Monthly Reading</div></div>
-    <div class="insight-stat"><div class="n">${formatDuration((streak.dailyReadingSeconds||{})[today]||0)}</div><div class="l">Today's Time</div></div>`;
-
-  el('insightsLifetimeGrid').innerHTML = `
-    <div class="insight-stat"><div class="n">${finishedCount}</div><div class="l">Books Finished</div></div>
-    <div class="insight-stat"><div class="n">${streak.totalPagesRead||0}</div><div class="l">Pages Read</div></div>
-    <div class="insight-stat"><div class="n">${streak.currentStreak||0}</div><div class="l">Current Streak</div></div>
-    <div class="insight-stat"><div class="n">${streak.longestStreak||0}</div><div class="l">Longest Streak</div></div>
-    <div class="insight-stat"><div class="n">${avgPerDay}</div><div class="l">Avg Pages / Day</div></div>
-    <div class="insight-stat"><div class="n">${formatDuration(streak.totalReadingSeconds||0)}</div><div class="l">Reading Time</div></div>
-    <div class="insight-stat"><div class="n">${formatDuration(streak.longestSessionSeconds||0)}</div><div class="l">Longest Session</div></div>
-    <div class="insight-stat"><div class="n">${estMinutesLeft!=null ? estMinutesLeft+'m' : '—'}</div><div class="l">Est. Time Remaining</div></div>
-    <div class="insight-stat"><div class="n" style="font-size:13px;">${mostRead ? escapeHtml(mostRead.title.slice(0,16)) : '—'}</div><div class="l">Most Read Book</div></div>`;
-
-  // 365-day GitHub-style heatmap, reusing streak.history — column-major so it reads left→right as weeks
-  let days = []; for (let i=364;i>=0;i--) days.push(todayStr(-i));
-  const grid = el('heatmapGrid');
-  grid.innerHTML = '';
-  days.forEach(d=>{
-    const pages = (streak.history||{})[d] || 0;
-    const cell = document.createElement('div');
-    cell.className = 'heatmap-cell';
-    cell.style.background = heatmapColor(pages, goal);
-    cell.title = `${d}: ${pages} page${pages===1?'':'s'}`;
-    cell.addEventListener('click', ()=> showToast(`${d}: ${pages} page${pages===1?'':'s'} read`));
-    grid.appendChild(cell);
-  });
-}
-// libraryBtn already returns to shelf from the reader; when it's shown from Settings we
-// want it to do the same thing (back to shelf) rather than duplicate a second handler —
-// so route through the same function when Settings is the active screen.
-el('libraryBtn').addEventListener('click', ()=>{ if (el('settingsView').style.display !== 'none') exitSettingsToShelf(); });
-
-el('setGoalPages').addEventListener('change', async (e)=>{
-  const n = parseInt(e.target.value);
-  if (!n || n < 1){ e.target.value = 10; return; }
-  const streak = await loadStreak();
-  streak.goalPages = n;
-  await saveStreak(streak);
-  showToast('Daily goal updated');
-});
-el('setDefaultZoom').addEventListener('change', (e)=> persistSettingField({ defaultZoom: parseFloat(e.target.value) }));
-el('setDefaultReadMode').addEventListener('change', (e)=> persistSettingField({ defaultReadMode: e.target.checked }));
-el('setShowTips').addEventListener('change', (e)=> persistSettingField({ showReadingTips: e.target.checked }));
-el('setEnableMascot').addEventListener('change', (e)=> persistSettingField({ enableMascot: e.target.checked }));
-el('setEnableCelebrations').addEventListener('change', (e)=> persistSettingField({ enableCelebrations: e.target.checked }));
-el('setEnableMotivational').addEventListener('change', (e)=> persistSettingField({ enableMotivationalMessages: e.target.checked }));
-el('setEnableSounds').addEventListener('change', (e)=> persistSettingField({ enableSounds: e.target.checked }));
-
-el('aboutRoadmap').addEventListener('click', ()=> showToast('Roadmap coming soon 🗺️'));
-el('aboutReportBug').addEventListener('click', ()=> showToast('Use the feedback link in the app store listing for now'));
-el('aboutFeedback').addEventListener('click', ()=> showToast('Thanks! Feedback channel coming soon'));
-el('aboutPrivacy').addEventListener('click', ()=> showToast('Marginalia keeps everything on your device — nothing is uploaded'));
-
-el('resetProgressBtn').addEventListener('click', ()=> openDangerModal({
-  title: '⚠ Reset Reading Progress',
-  body: 'This action cannot be undone. This will permanently delete your Daily Goal, Streak, and Reading Progress history. Your books, bookmarks, highlights, and achievements are kept.',
-  onConfirm: resetReadingProgress
-}));
-el('resetEverythingBtn').addEventListener('click', ()=> openDangerModal({
-  title: '⚠ Reset Everything',
-  body: 'This action cannot be undone. This will permanently delete Books, Shelf, Bookmarks, Wishlist, Highlights, Pen Drawings, Underline, Sticky Notes, Reading Progress, Achievements, Daily Goal, Streak, and Settings. Everything.',
-  onConfirm: resetEverything
-}));
-
 el('uploadBtn').addEventListener('click', ()=>{ pendingWishlistId=null; el('fileInput').click(); });
 el('fileInput').addEventListener('change', (e)=>{ if (e.target.files[0]) openFile(e.target.files[0]); });
 el('dropzone').addEventListener('click', ()=>{ pendingWishlistId=null; el('fileInput').click(); });
 el('dropzone').addEventListener('dragover', (e)=>{ e.preventDefault(); el('dropzone').classList.add('drag'); });
 el('dropzone').addEventListener('dragleave', ()=> el('dropzone').classList.remove('drag'));
 el('dropzone').addEventListener('drop', (e)=>{ e.preventDefault(); el('dropzone').classList.remove('drag'); if (e.dataTransfer.files[0]) openFile(e.dataTransfer.files[0]); });
-const BACKUP_FORMAT_VERSION = 1;
-async function exportAllData(){
-  try{
-    const idx = await loadLibraryIndex();
-    const books = {};
-    for (const bookKey of Object.keys(idx)){
-      try{
-        const res = await window.storage.get(bookKey, false);
-        if (res && res.value) books[bookKey] = JSON.parse(res.value);
-      }catch(e){ /* skip unreadable book, don't fail the whole export */ }
-    }
-    const backup = {
-      formatVersion: BACKUP_FORMAT_VERSION,
-      exportedAt: Date.now(),
-      libraryIndex: idx,
-      books,
-      wishlist: await loadWishlist(),
-      streak: await loadStreak(),
-      achievements: await loadAchievements(),
-      settings: await loadSettings()
-    };
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `marginalia-backup-${todayStr(0)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    showToast('Exported ✅');
-  }catch(e){
-    showToast("Couldn't export — Retry");
-  }
-}
-function validateBackupShape(data){
-  if (!data || typeof data !== 'object') return 'Not a valid backup file';
-  if (typeof data.formatVersion !== 'number') return 'Missing or invalid version';
-  if (data.formatVersion > BACKUP_FORMAT_VERSION) return 'This backup is from a newer version of Marginalia';
-  if (typeof data.libraryIndex !== 'object' || typeof data.books !== 'object') return 'Backup file looks corrupted';
-  if (!Array.isArray(data.wishlist)) return 'Backup file looks corrupted';
-  return null;
-}
-async function importAllData(file){
-  let data;
-  try{
-    const text = await file.text();
-    data = JSON.parse(text);
-  }catch(e){
-    showToast('Import failed — file is not valid JSON');
-    return;
-  }
-  const err = validateBackupShape(data);
-  if (err){ showToast('Import failed — ' + err); return; }
-  try{
-    for (const bookKey of Object.keys(data.books)){
-      await storageSetWithRetry(bookKey, JSON.stringify(data.books[bookKey]), false);
-    }
-    await storageSetWithRetry('library-index', JSON.stringify(data.libraryIndex), false);
-    await saveWishlist(data.wishlist || []);
-    if (data.streak) await saveStreak(Object.assign({ currentStreak:0, longestStreak:0, lastReadDate:null, history:{}, goalPages:10 }, data.streak));
-    if (data.achievements) await storageSetWithRetry('achievements', JSON.stringify(data.achievements), false);
-    if (data.settings) await saveSettings(Object.assign({}, SETTINGS_DEFAULTS, data.settings));
-    showToast('Import successful ✅');
-    setTimeout(()=> window.location.reload(), 700);
-  }catch(e){
-    showToast("Import failed while saving — Retry");
-  }
-}
-el('exportDataBtn').addEventListener('click', exportAllData);
-el('importDataBtn').addEventListener('click', ()=> el('importFileInput').click());
-el('importFileInput').addEventListener('change', (e)=>{ if (e.target.files[0]) importAllData(e.target.files[0]); });
+
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/sw.js");
 }
 // init
 checkStorageAvailability().then(async ()=>{
-  const seenOnboarding = await loadOnboardingSeen();
-  if (!seenOnboarding){
-    el('mascotWelcome').innerHTML = mascotSVG({ size: 72, mood:'happy' });
-    el('welcomeModalScrim').classList.add('show');
-    el('welcomeContinueBtn').addEventListener('click', async ()=>{
-      el('welcomeModalScrim').classList.remove('show');
-      await markOnboardingSeen();
-    }, { once:true });
-  } else {
-    await checkWelcomeBackMessage();
-  }
+  await checkWelcomeBackMessage();
   renderShelf();
 });
 async function checkWelcomeBackMessage(){
@@ -2632,15 +2020,12 @@ async function checkWelcomeBackMessage(){
   const yesterday = todayStr(-1);
   if (streak.lastAppOpenDate !== today){
     if (streak.lastAppOpenDate === yesterday){
-      showToast("Welcome back 👋 Ready to continue?");
+      showToast("Welcome back! Ready for today's adventure? 🌤️");
     } else if (streak.lastAppOpenDate){
-      showToast("🥺 I've missed reading with you. Let's build our streak again!");
+      showToast("I've missed reading with you 🥺 Let's build our streak again!");
     }
     streak.lastAppOpenDate = today;
     await saveStreak(streak);
-  } else if (streak.currentStreak >= 3 && !streak.goalCompletedToday){
-    // gentle, once-per-session-open nudge — never fires the same day it already fired via other toasts
-    showToast('Great consistency 🔥 Keep it going');
   }
 }
 </script>
