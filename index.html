@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#FF6FA8">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 <title>Marginalia — your cozy reading nest</title>
@@ -1614,6 +1616,9 @@ el('dropzone').addEventListener('dragover', (e)=>{ e.preventDefault(); el('dropz
 el('dropzone').addEventListener('dragleave', ()=> el('dropzone').classList.remove('drag'));
 el('dropzone').addEventListener('drop', (e)=>{ e.preventDefault(); el('dropzone').classList.remove('drag'); if (e.dataTransfer.files[0]) openFile(e.dataTransfer.files[0]); });
 
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js");
+}
 // init
 checkStorageAvailability().then(renderShelf);
 </script>
