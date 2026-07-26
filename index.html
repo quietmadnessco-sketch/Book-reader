@@ -89,11 +89,6 @@
   .textLayer > span{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%;}
   .textLayer ::selection{background:rgba(255,111,168,0.35);}
 
-  ::highlight(marg-pink){background-color:rgba(255,111,168,0.4);}
-  ::highlight(marg-mint){background-color:rgba(63,203,168,0.4);}
-  ::highlight(marg-sky){background-color:rgba(95,182,242,0.4);}
-  ::highlight(marg-underline){text-decoration:underline;text-decoration-color:#E8508C;text-decoration-thickness:2.5px;text-underline-offset:3px;}
-
   .ink-layer{position:absolute;left:0;top:0;right:0;bottom:0;pointer-events:none;touch-action:none;}
   .notes-layer{position:absolute;left:0;top:0;right:0;bottom:0;pointer-events:none;}
 
@@ -389,21 +384,39 @@
 
   <div class="tool-fab-wrap" id="toolFabWrap" style="display:none;">
     <div class="tool-menu" id="toolMenuColors">
-      <button class="tool-menu-item" data-back title="Back">‹ back</button>
+      <button class="tool-menu-item" data-back title="Back">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        <span>Back</span>
+      </button>
       <button class="tool-menu-item tool-color pink" data-tool="pink" title="Pink highlighter"></button>
       <button class="tool-menu-item tool-color mint" data-tool="mint" title="Mint highlighter"></button>
       <button class="tool-menu-item tool-color sky" data-tool="sky" title="Sky highlighter"></button>
     </div>
     <div class="tool-menu" id="toolMenuMain">
-      <button class="tool-menu-item" data-tool="none" title="Just reading — no marking">👆 <span>Just reading</span></button>
-      <button class="tool-menu-item" data-open-colors title="Highlighter — pick a color, then drag over words">🖍️ <span>Highlighter</span></button>
-      <button class="tool-menu-item" data-tool="underline" title="Underline — drag over words">U <span>Underline</span></button>
-      <button class="tool-menu-item" data-tool="pen" title="Pen — draw freely on the page">✎ <span>Pen</span></button>
-      <button class="tool-menu-item" data-tool="note" title="Sticky note — tap the page to place one">📝 <span>Sticky note</span></button>
-      <button class="tool-menu-item" data-tool="eraser" title="Eraser — tap a mark to remove it">🧽 <span>Eraser</span></button>
+      <button class="tool-menu-item" data-open-colors title="Highlighter — pick a color, then drag anywhere">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-9.5 9.5-5 1 1-5L17 3z"/><path d="M3 21l3-1"/></svg>
+        <span>Highlighter</span>
+      </button>
+      <button class="tool-menu-item" data-tool="underline" title="Underline — drag anywhere">
+        <span class="tool-underline-icon">U</span>
+        <span>Underline</span>
+      </button>
+      <button class="tool-menu-item" data-tool="pen" title="Pen — draw freely anywhere on the page">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <span>Pen</span>
+      </button>
+      <button class="tool-menu-item" data-tool="note" title="Sticky note — tap anywhere to place one">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 4h13l3 3v13H4V4z"/><path d="M16 4v4h4"/></svg>
+        <span>Sticky note</span>
+      </button>
+      <button class="tool-menu-item" data-tool="eraser" title="Eraser — tap a mark to remove it">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M18 13l-6.5 6.5a2 2 0 0 1-2.8 0L4 15l9-9 6.5 6.5a1 1 0 0 1 0 1.4z"/><path d="M9 20h9"/></svg>
+        <span>Eraser</span>
+      </button>
     </div>
     <button class="fab tool-fab" id="toolFab" title="Marking tools">
-      🧰<span class="tool-fab-badge" id="toolFabBadge" style="display:none;"></span>
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="9" width="18" height="10" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/><path d="M3 13h18"/></svg>
+      <span class="tool-fab-badge" id="toolFabBadge" style="display:none;"></span>
     </button>
   </div>
   <div class="tool-hint" id="toolHint"></div>
@@ -550,7 +563,6 @@ let rendering = false;
 let pendingPage = null;
 let activeTab = 'bookmarks';
 let pendingWishlistId = null;
-const cssHighlightsMap = {};
 const el = (id) => document.getElementById(id);
 
 function showToast(msg){
@@ -562,12 +574,38 @@ function showToast(msg){
 }
 
 // ---------------- storage availability check ----------------
-// The "Couldn't save" that kept happening on EVERY save (not occasionally) usually
-// means window.storage itself isn't available in this viewing context, not that a
-// single request failed. We test it once at startup; if it's broken, we swap in an
-// in-memory shim with the identical interface so the app still works for this
-// session, and we tell the user honestly instead of pretending it saved.
+// window.storage (the get/set/delete/list bridge) only exists inside Claude.ai's own
+// artifact preview — it is NOT a real browser API. Deployed standalone (Vercel, your
+// own domain, a plain static host, etc.) there is no window.storage at all, so every
+// save was silently failing from the very first load. Fixed with a priority order:
+//   1. Real window.storage, if this happens to be running inside Claude.ai.
+//   2. localStorage on your own domain — this is what actually saves permanently
+//      once you're self-hosted, which is your real-world case on Vercel.
+//   3. In-memory only, with a visible warning, if even localStorage is blocked
+//      (e.g. strict private browsing) — data won't survive a reload in that case.
 let PERSIST_OK = true;
+function installLocalStorageShim(){
+  const ns = 'marginalia:';
+  const k = (key, shared) => ns + (shared ? 'shared:' : 'me:') + key;
+  window.storage = {
+    async get(key, shared){
+      const raw = localStorage.getItem(k(key, shared));
+      if (raw === null) throw new Error('key not found (localStorage)');
+      return { key, value: raw, shared: !!shared };
+    },
+    async set(key, value, shared){ localStorage.setItem(k(key, shared), value); return { key, value, shared: !!shared }; },
+    async delete(key, shared){ localStorage.removeItem(k(key, shared)); return { key, deleted: true, shared: !!shared }; },
+    async list(prefix, shared){
+      const p = k(prefix || '', shared);
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i++){
+        const lk = localStorage.key(i);
+        if (lk && lk.startsWith(p)) keys.push(lk.slice(ns.length + (shared ? 7 : 3)));
+      }
+      return { keys, prefix, shared: !!shared };
+    }
+  };
+}
 function installMemoryStorageShim(){
   const mem = {};
   const k = (key, shared) => (shared ? 'shared:' : 'me:') + key;
@@ -590,19 +628,30 @@ function showPersistWarning(){
   const banner = document.createElement('div');
   banner.id = 'persistWarning';
   banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:500;background:#3A2E3F;color:#fff;font-family:Nunito,sans-serif;font-size:12.5px;font-weight:700;text-align:center;padding:9px 14px;';
-  banner.innerHTML = "⚠️ This session can't reach saved storage right now — your bookmarks, notes and highlights will disappear if you close or reload this tab. <span style=\"text-decoration:underline;cursor:pointer;\" id=\"dismissPersistWarning\">Dismiss</span>";
+  banner.innerHTML = "⚠️ This browser is blocking saved storage entirely — your bookmarks, notes and highlights will disappear if you close or reload this tab. <span style=\"text-decoration:underline;cursor:pointer;\" id=\"dismissPersistWarning\">Dismiss</span>";
   document.body.prepend(banner);
   document.getElementById('dismissPersistWarning').addEventListener('click', ()=> banner.remove());
 }
+async function testStorageRoundTrip(){
+  const testVal = String(Date.now());
+  await window.storage.set('__marg_boot_check__', testVal, false);
+  const readBack = await window.storage.get('__marg_boot_check__', false);
+  if (!readBack || readBack.value !== testVal) throw new Error('storage did not round-trip correctly');
+}
 async function checkStorageAvailability(){
   try{
-    if (typeof window.storage === 'undefined') throw new Error('window.storage is not defined in this context');
-    const testVal = String(Date.now());
-    await window.storage.set('__marg_boot_check__', testVal, false);
-    const readBack = await window.storage.get('__marg_boot_check__', false);
-    if (!readBack || readBack.value !== testVal) throw new Error('storage did not round-trip correctly');
+    if (typeof window.storage === 'undefined') throw new Error('no native window.storage bridge (not running inside Claude.ai)');
+    await testStorageRoundTrip();
+    return; // real bridge works — we're inside Claude.ai, nothing else to do
   }catch(e){
-    console.warn('Persistent storage unavailable, falling back to in-memory for this session:', e);
+    console.warn('No native storage bridge, trying localStorage instead:', e);
+  }
+  try{
+    installLocalStorageShim();
+    await testStorageRoundTrip();
+    // works — this is the normal case once self-hosted (e.g. on Vercel); saves for real, no warning needed
+  }catch(e2){
+    console.warn('localStorage unavailable too, falling back to in-memory (nothing will persist):', e2);
     PERSIST_OK = false;
     installMemoryStorageShim();
     showPersistWarning();
@@ -1109,7 +1158,7 @@ async function goToPage(num, skipSave){
     const task = pdfjsLib.renderTextLayer({ textContent, container: textLayerDiv, viewport, textDivs: [] });
     if (task && task.promise) await task.promise;
 
-    reapplyHighlightsForPage(num, textLayerDiv);
+    // (highlights/underlines are ink strokes now, rendered below with renderInkForPage)
 
     const inkLayer = el('inkLayer');
     inkLayer.setAttribute('width', viewport.width);
@@ -1175,109 +1224,11 @@ function launchCelebration(){
 }
 el('celebrateClose').addEventListener('click', ()=> el('celebrateScrim').classList.remove('show'));
 
-// ---------------- highlights & underline ----------------
-// Uses the CSS Custom Highlight API. Supported: Chrome/Edge 105+, Safari 17.2+.
-// Firefox does not support it yet — we detect that and fall back to inline <mark>-style
-// spans wrapped around the actual DOM range so it still works everywhere.
-const HL_SUPPORTED = typeof CSS !== 'undefined' && 'highlights' in CSS;
-
-function getHighlightObj(color){
-  if (!HL_SUPPORTED) return null;
-  if (!cssHighlightsMap[color]){
-    const hl = new Highlight();
-    CSS.highlights.set('marg-' + color, hl);
-    cssHighlightsMap[color] = hl;
-  }
-  return cssHighlightsMap[color];
-}
-function clearHighlightRanges(){ Object.values(cssHighlightsMap).forEach(hl => hl.clear()); }
-function findRangeForText(container, text){
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
-  const nodes = [];
-  let fullText = '';
-  let node;
-  while ((node = walker.nextNode())){ nodes.push({ node, start: fullText.length }); fullText += node.textContent; }
-  const idx = fullText.indexOf(text);
-  if (idx === -1) return null;
-  const endIdx = idx + text.length;
-  let startNode=null, startOffset=0, endNode=null, endOffset=0;
-  for (const n of nodes){
-    const nStart = n.start, nEnd = n.start + n.node.textContent.length;
-    if (startNode===null && idx>=nStart && idx<=nEnd){ startNode=n.node; startOffset=idx-nStart; }
-    if (endIdx>=nStart && endIdx<=nEnd){ endNode=n.node; endOffset=endIdx-nStart; }
-  }
-  if (!startNode || !endNode) return null;
-  try{ const range = document.createRange(); range.setStart(startNode, startOffset); range.setEnd(endNode, endOffset); return range; }
-  catch(e){ return null; }
-}
-function reapplyHighlightsForPage(pageNum, textLayerDiv){
-  clearHighlightRanges();
-  // clear any fallback <span> wrappers from a previous render of this page
-  textLayerDiv.querySelectorAll('.marg-fallback-mark').forEach(m=>{
-    const parent = m.parentNode;
-    while (m.firstChild) parent.insertBefore(m.firstChild, m);
-    parent.removeChild(m);
-  });
-  (state.highlights||[]).filter(h => h.page === pageNum).forEach(h=>{
-    const range = findRangeForText(textLayerDiv, h.text);
-    if (!range) return;
-    if (HL_SUPPORTED){
-      const hlObj = getHighlightObj(h.color);
-      if (hlObj) hlObj.add(range);
-    } else {
-      applyFallbackMark(range, h.color);
-    }
-  });
-}
-function applyFallbackMark(range, color){
-  try{
-    const mark = document.createElement('span');
-    mark.className = 'marg-fallback-mark';
-    if (color === 'underline'){
-      mark.style.textDecoration = 'underline';
-      mark.style.textDecorationColor = '#E8508C';
-      mark.style.textDecorationThickness = '2.5px';
-    } else {
-      const bg = color==='pink' ? 'rgba(255,111,168,0.4)' : color==='mint' ? 'rgba(63,203,168,0.4)' : 'rgba(95,182,242,0.4)';
-      mark.style.backgroundColor = bg;
-      mark.style.borderRadius = '2px';
-    }
-    range.surroundContents(mark);
-  }catch(e){ /* range spans multiple elements — CSS Highlight API path handles that case; fallback just skips it */ }
-}
-function commitHighlightFromSelection(color){
-  const sel = window.getSelection();
-  if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
-  const text = sel.toString().trim();
-  if (!text) return;
-  const range = sel.getRangeAt(0).cloneRange();
-  const id = 'h' + Date.now() + Math.random().toString(36).slice(2,7);
-  state.highlights.push({ id, page: state.currentPage, text, color, createdAt: Date.now() });
-  if (HL_SUPPORTED){
-    const hlObj = getHighlightObj(color);
-    if (hlObj) hlObj.add(range);
-  } else {
-    applyFallbackMark(range, color);
-  }
-  sel.removeAllRanges();
-  saveBookState();
-  if (activeTab === 'highlights') renderSidebarTab();
-}
-function eraseHighlightsInSelection(sel){
-  const text = sel.toString().trim();
-  if (!text) return;
-  const before = state.highlights.length;
-  state.highlights = state.highlights.filter(h=>{
-    if (h.page !== state.currentPage) return true;
-    return !(text.includes(h.text) || h.text.includes(text));
-  });
-  sel.removeAllRanges();
-  if (state.highlights.length !== before){
-    reapplyHighlightsForPage(state.currentPage, el('textLayer'));
-    saveBookState();
-    if (activeTab === 'highlights') renderSidebarTab();
-  }
-}
+// ---------------- highlighter, underline & pen: all one brush system now ----------------
+// Per your request: these behave like a Photoshop brush — draw anywhere on the page,
+// not just over selectable text. That also means the "accidentally selected the
+// paragraph above" bug and the broken eraser both go away, since nothing is anchored
+// to text anymore — it's all just ink strokes, erased by tapping the stroke itself.
 
 // ---------------- tool FAB: tap to open a menu, pick a tool, then mark the page ----------------
 let activeTool = 'none';
@@ -1295,28 +1246,28 @@ function closeToolMenus(){
 }
 function setActiveTool(tool){
   activeTool = tool;
-  const textLayer = el('textLayer');
   const inkLayer = el('inkLayer');
   const notesLayer = el('notesLayer');
   inkLayer.style.pointerEvents = 'none';
   notesLayer.style.pointerEvents = 'none';
-  textLayer.style.pointerEvents = 'auto';
 
-  if (tool === 'pen'){
-    inkLayer.style.pointerEvents = 'auto';
-    textLayer.style.pointerEvents = 'none';
-    showToolHint('Draw on the page ✎');
-  } else if (tool === 'note'){
+  if (tool === 'note'){
     notesLayer.style.pointerEvents = 'auto';
-    textLayer.style.pointerEvents = 'none';
-    showToolHint('Tap anywhere on the page to stick a note');
+    showToolHint('Tap anywhere — even the margins — to stick a note');
   } else if (tool === 'eraser'){
     inkLayer.style.pointerEvents = 'auto';
-    showToolHint('Tap a highlight or pen mark to remove it (notes have their own × )');
+    showToolHint('Tap a mark to remove it (notes have their own ×)');
   } else if (tool === 'none'){
     showToolHint('');
+  } else if (tool === 'pen'){
+    inkLayer.style.pointerEvents = 'auto';
+    showToolHint('Draw anywhere on the page');
+  } else if (tool === 'underline'){
+    inkLayer.style.pointerEvents = 'auto';
+    showToolHint('Draw a line anywhere — under words, in the margin, wherever');
   } else {
-    showToolHint(tool === 'underline' ? 'Drag over words to underline' : 'Drag over words to highlight');
+    inkLayer.style.pointerEvents = 'auto';
+    showToolHint('Drag anywhere to highlight, like a real marker');
   }
 
   const badge = el('toolFabBadge');
@@ -1337,7 +1288,8 @@ document.getElementById('toolMenuMain').addEventListener('click', (e)=>{
     el('toolMenuColors').classList.add('open');
     return;
   }
-  setActiveTool(btn.dataset.tool);
+  // tapping the tool that's already active turns marking off, instead of a separate "just reading" button
+  setActiveTool(btn.dataset.tool === activeTool ? 'none' : btn.dataset.tool);
   closeToolMenus();
 });
 document.getElementById('toolMenuColors').addEventListener('click', (e)=>{
@@ -1348,86 +1300,38 @@ document.getElementById('toolMenuColors').addEventListener('click', (e)=>{
     el('toolMenuMain').classList.add('open');
     return;
   }
-  setActiveTool(btn.dataset.tool);
+  setActiveTool(btn.dataset.tool === activeTool ? 'none' : btn.dataset.tool);
   closeToolMenus();
 });
 document.addEventListener('click', (e)=>{
   if (!el('toolFabWrap').contains(e.target)) closeToolMenus();
 });
 
-function caretRangeAt(x, y){
-  if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y);
-  if (document.caretPositionFromPoint){
-    const pos = document.caretPositionFromPoint(x, y);
-    if (!pos) return null;
-    const r = document.createRange();
-    r.setStart(pos.offsetNode, pos.offset);
-    r.collapse(true);
-    return r;
-  }
-  return null;
-}
-function orderedRange(a, b){
-  const r = document.createRange();
-  if (a.compareBoundaryPoints(Range.START_TO_START, b) <= 0){
-    r.setStart(a.startContainer, a.startOffset);
-    r.setEnd(b.startContainer, b.startOffset);
-  } else {
-    r.setStart(b.startContainer, b.startOffset);
-    r.setEnd(a.startContainer, a.startOffset);
-  }
-  return r;
-}
-
-let markDragging = false;
-let markAnchor = null;
-function markPointerDown(e){
-  if (!pdfDoc) return;
-  if (activeTool === 'none' || activeTool === 'pen' || activeTool === 'note') return;
-  const point = (e.touches && e.touches[0]) ? e.touches[0] : e;
-  const anchor = caretRangeAt(point.clientX, point.clientY);
-  if (!anchor) return;
-  markDragging = true;
-  markAnchor = anchor;
-  window.getSelection().removeAllRanges();
-  e.preventDefault();
-}
-function markPointerMove(e){
-  if (!markDragging) return;
-  const point = (e.touches && e.touches[0]) ? e.touches[0] : e;
-  const current = caretRangeAt(point.clientX, point.clientY);
-  if (!current) return;
-  const range = orderedRange(markAnchor, current);
-  const sel = window.getSelection();
-  sel.removeAllRanges();
-  try{ sel.addRange(range); }catch(err){}
-  e.preventDefault();
-}
-function markPointerUp(){
-  if (!markDragging) return;
-  markDragging = false;
-  markAnchor = null;
-  const sel = window.getSelection();
-  if (!sel || sel.isCollapsed || !sel.toString().trim()) return;
-  if (activeTool === 'eraser'){ eraseHighlightsInSelection(sel); }
-  else { commitHighlightFromSelection(activeTool); }
-}
-const textLayerNode = () => el('textLayer');
-textLayerNode().addEventListener('mousedown', markPointerDown);
-document.addEventListener('mousemove', markPointerMove);
-document.addEventListener('mouseup', markPointerUp);
-textLayerNode().addEventListener('touchstart', markPointerDown, { passive:false });
-textLayerNode().addEventListener('touchmove', markPointerMove, { passive:false });
-textLayerNode().addEventListener('touchend', markPointerUp);
-
-// ---------------- freehand pen: real ink strokes drawn straight on the page ----------------
+// ---------------- the brush itself: highlighter / underline / pen all draw the same way ----------------
+// Photoshop-style: pick a tool, then drag ANYWHERE on the page — not limited to real
+// text — so it works fine over images, diagrams, and margins too.
 function pointsToPathD(points){
   if (!points.length) return '';
   let d = `M ${points[0][0].toFixed(1)} ${points[0][1].toFixed(1)}`;
   for (let i=1;i<points.length;i++) d += ` L ${points[i][0].toFixed(1)} ${points[i][1].toFixed(1)}`;
   return d;
 }
-function penColorHex(){ return '#3A2E3F'; }
+const BRUSH_STYLE = {
+  pink:      { stroke: '#FF6FA8', width: 20, opacity: 0.4, cap: 'round' },
+  mint:      { stroke: '#3FCBA8', width: 20, opacity: 0.4, cap: 'round' },
+  sky:       { stroke: '#5FB6F2', width: 20, opacity: 0.4, cap: 'round' },
+  underline: { stroke: '#E8508C', width: 3,  opacity: 1,   cap: 'round' },
+  pen:       { stroke: '#3A2E3F', width: 3,  opacity: 1,   cap: 'round' }
+};
+function applyBrushAttrs(path, kind){
+  const s = BRUSH_STYLE[kind] || BRUSH_STYLE.pen;
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke', s.stroke);
+  path.setAttribute('stroke-width', s.width);
+  path.setAttribute('stroke-linecap', s.cap);
+  path.setAttribute('stroke-linejoin', 'round');
+  path.setAttribute('opacity', s.opacity);
+}
 let inkDrawing = false, inkPoints = [], livePathEl = null;
 const inkLayerEl = () => el('inkLayer');
 function getInkPoint(e){
@@ -1435,16 +1339,13 @@ function getInkPoint(e){
   const t = e.touches && e.touches[0] ? e.touches[0] : e;
   return [t.clientX - rect.left, t.clientY - rect.top];
 }
+function isBrushTool(tool){ return tool==='pink' || tool==='mint' || tool==='sky' || tool==='underline' || tool==='pen'; }
 function inkPointerDown(e){
-  if (activeTool !== 'pen') return;
+  if (!isBrushTool(activeTool)) return;
   inkDrawing = true;
   inkPoints = [getInkPoint(e)];
   livePathEl = document.createElementNS('http://www.w3.org/2000/svg','path');
-  livePathEl.setAttribute('fill','none');
-  livePathEl.setAttribute('stroke', penColorHex());
-  livePathEl.setAttribute('stroke-width','3');
-  livePathEl.setAttribute('stroke-linecap','round');
-  livePathEl.setAttribute('stroke-linejoin','round');
+  applyBrushAttrs(livePathEl, activeTool);
   inkLayerEl().appendChild(livePathEl);
   e.preventDefault();
 }
@@ -1461,7 +1362,7 @@ function inkPointerUp(){
     const id = 'k' + Date.now() + Math.random().toString(36).slice(2,6);
     state.ink = state.ink || {};
     state.ink[state.currentPage] = state.ink[state.currentPage] || [];
-    state.ink[state.currentPage].push({ id, points: inkPoints });
+    state.ink[state.currentPage].push({ id, kind: activeTool, points: inkPoints });
     saveBookState();
   } else if (livePathEl){
     livePathEl.remove();
@@ -1482,17 +1383,15 @@ function renderInkForPage(pageNum){
   strokes.forEach(s=>{
     const path = document.createElementNS('http://www.w3.org/2000/svg','path');
     path.setAttribute('d', pointsToPathD(s.points));
-    path.setAttribute('fill','none');
-    path.setAttribute('stroke', penColorHex());
-    path.setAttribute('stroke-width','3');
-    path.setAttribute('stroke-linecap','round');
-    path.setAttribute('stroke-linejoin','round');
+    applyBrushAttrs(path, s.kind || 'pen');
     path.style.cursor = 'pointer';
+    path.style.pointerEvents = 'stroke';
     path.addEventListener('click', ()=>{
       if (activeTool !== 'eraser') return;
       state.ink[pageNum] = state.ink[pageNum].filter(x=>x.id!==s.id);
       saveBookState();
       renderInkForPage(pageNum);
+      showToast('Removed');
     });
     layer.appendChild(path);
   });
@@ -1521,7 +1420,6 @@ function addNote(text, x, y){
 function deleteItem(type, id){
   state[type] = state[type].filter(i=>i.id!==id);
   saveBookState();
-  if (type==='highlights') reapplyHighlightsForPage(state.currentPage, el('textLayer'));
   if (type==='notes') renderStickyNotesForPage(state.currentPage);
   renderSidebarTab();
 }
@@ -1610,8 +1508,11 @@ document.querySelectorAll('.sidebar-tab').forEach(tab=>{
     renderSidebarTab();
   });
 });
-function highlightBorderClass(color){
-  return color==='pink' ? 'pink-b' : color==='mint' ? 'mint-b' : color==='sky' ? 'sky-b' : 'underline-b';
+function highlightBorderClass(kind){
+  return kind==='pink' ? 'pink-b' : kind==='mint' ? 'mint-b' : kind==='sky' ? 'sky-b' : 'underline-b';
+}
+function markLabel(kind){
+  return kind==='pink' ? 'Pink highlight' : kind==='mint' ? 'Mint highlight' : kind==='sky' ? 'Sky highlight' : 'Underline';
 }
 function renderSidebarTab(){
   if (!state) return;
@@ -1637,12 +1538,34 @@ function renderSidebarTab(){
     body.querySelectorAll('[data-del="notes"]').forEach(btn=> btn.addEventListener('click', (e)=>{ e.stopPropagation(); deleteItem('notes', btn.dataset.id); }));
   }
   else if (activeTab === 'highlights'){
+    // marks are freehand ink now, not quoted text — this tab is a fast-jump index by page
+    const ink = state.ink || {};
+    const pages = Object.keys(ink).map(Number).filter(p => (ink[p]||[]).some(s => s.kind !== 'pen')).sort((a,b)=>a-b);
     let html = '';
-    if (!state.highlights.length){ html = '<div class="empty-hint">No highlights yet. Select text on the page and pick a color, or the U button to underline.</div>'; }
-    else { state.highlights.forEach(h=>{ html += `<div class="item-card ${highlightBorderClass(h.color)}" data-page="${h.page}"><div class="item-page">Page ${h.page}</div><div class="item-text">${escapeHtml(h.text)}</div><button class="item-del" data-del="highlights" data-id="${h.id}">✕</button></div>`; }); }
+    if (!pages.length){ html = '<div class="empty-hint">No highlights or underlines yet. Pick a color from the tool menu and drag anywhere on the page.</div>'; }
+    else {
+      pages.forEach(p=>{
+        const strokes = ink[p].filter(s=>s.kind!=='pen');
+        const counts = {};
+        strokes.forEach(s=> counts[s.kind] = (counts[s.kind]||0)+1);
+        const summary = Object.keys(counts).map(k=> `${counts[k]} ${markLabel(k).toLowerCase()}${counts[k]>1?'s':''}`).join(', ');
+        html += `<div class="item-card ${highlightBorderClass(strokes[0].kind)}" data-page="${p}">
+          <div class="item-page">Page ${p}</div>
+          <div class="item-text">${summary}</div>
+          <button class="item-del" data-del="highlights-page" data-page="${p}">✕</button>
+        </div>`;
+      });
+    }
     body.innerHTML = html;
     body.querySelectorAll('.item-card').forEach(c=> c.addEventListener('click', (e)=>{ if(e.target.closest('.item-del')) return; goToPage(parseInt(c.dataset.page)); }));
-    body.querySelectorAll('[data-del="highlights"]').forEach(btn=> btn.addEventListener('click', (e)=>{ e.stopPropagation(); deleteItem('highlights', btn.dataset.id); }));
+    body.querySelectorAll('[data-del="highlights-page"]').forEach(btn=> btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const p = parseInt(btn.dataset.page);
+      state.ink[p] = (state.ink[p]||[]).filter(s=>s.kind==='pen');
+      saveBookState();
+      if (p === state.currentPage) renderInkForPage(p);
+      renderSidebarTab();
+    }));
   }
 }
 
