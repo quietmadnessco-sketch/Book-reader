@@ -147,8 +147,17 @@
   .tool-hint.show{opacity:0.94;}
 
   @media (max-width: 780px){
-    .tool-fab-wrap{right:16px;bottom:16px;}
-    .reader-mascot{left:16px;bottom:16px;width:44px;height:44px;}
+    .tool-fab-wrap{right:10px;bottom:calc(10px + env(safe-area-inset-bottom, 0px));gap:8px;}
+    .tool-fab{width:46px;height:46px;font-size:20px;box-shadow:0 4px 0 var(--pink-dark), 0 6px 16px rgba(232,80,140,0.35);}
+    .tool-fab:active{box-shadow:0 1px 0 var(--pink-dark);}
+    .tool-fab-badge{width:13px;height:13px;top:-2px;right:-2px;}
+    .tool-menu{padding:8px;gap:6px;}
+    .tool-menu-item{padding:7px 10px;font-size:12px;}
+    .tool-menu-item.tool-color{width:32px;height:32px;}
+    .reader-mascot{left:10px;bottom:calc(10px + env(safe-area-inset-bottom, 0px));width:40px;height:40px;}
+    .tool-hint{bottom:64px;font-size:11px;padding:5px 12px;}
+    .page-mat{padding:4px;border-radius:10px;box-shadow:0 4px 0 var(--line), 0 6px 16px rgba(216,120,160,0.16);}
+    .reader-viewport{padding:8px 6px 78px;overflow-x:hidden;}
   }
 
   .page-nav{
@@ -280,16 +289,38 @@
   .confetti{position:absolute;width:8px;height:8px;border-radius:2px;opacity:0.9;animation:fall 1.6s ease-in forwards;}
   @keyframes fall{to{transform:translateY(220px) rotate(360deg);opacity:0;}}
 
-  @media (max-width: 780px){
+ @media (max-width: 780px){
     .brand-name{display:none;}
-    .sidebar{position:fixed;top:0;right:0;bottom:0;width:82%;max-width:320px;transform:translateX(100%);transition:transform .25s ease;z-index:60;box-shadow:-8px 0 30px rgba(0,0,0,0.25);}
+    .topbar{padding:6px 10px;gap:6px;}
+    .btn{padding:7px 10px;font-size:12px;border-radius:12px;}
+    .btn-round{width:32px;height:32px;}
+    .book-title{font-size:12px;}
+    .progress-pct{font-size:10px;}
+    .sidebar{position:fixed;top:0;right:0;bottom:0;width:86%;max-width:320px;transform:translateX(100%);transition:transform .25s ease;z-index:60;box-shadow:-8px 0 30px rgba(0,0,0,0.25);}
     .sidebar.open{transform:translateX(0);}
     .sidebar-toggle{display:flex;}
     .sidebar-scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:50;}
     .sidebar-scrim.show{display:block;}
-    .progress-track{max-width:100px;}
-    .page-mat{padding:10px;}
+    .sidebar-tab{padding:7px 4px;font-size:11px;}
+    .sidebar-action{padding:8px;font-size:12px;}
+    .item-del{padding:6px 8px;}
+    .sn-del{padding:6px;}
+    .color-dot{width:34px;height:34px;}
+    .progress-track{max-width:80px;}
     .hero-text h1{font-size:21px;}
+    .spine{width:10px;}
+    .shelf{padding:20px 12px 90px;}
+    .dropzone{padding:16px 14px;margin:16px 0 22px;}
+    .page-nav{bottom:calc(10px + env(safe-area-inset-bottom, 0px));padding:6px 8px;gap:6px;}
+    .page-nav button{width:30px;height:30px;font-size:14px;}
+    .page-nav input{width:26px;font-size:12px;}
+    .page-nav .of{font-size:11px;}
+    .fab{width:48px;height:48px;font-size:24px;bottom:calc(20px + env(safe-area-inset-bottom, 0px));right:16px;}
+  }
+
+  @media (max-width: 400px){
+    .btn-label{display:none;}
+    .btn{padding:8px;}
   }
 </style>
 </head>
@@ -312,9 +343,9 @@
       </div>
     </div>
     <div class="topbar-actions">
-      <button class="btn btn-ghost" id="libraryBtn" style="display:none;">🏠 Shelf</button>
-      <button class="btn btn-ghost sidebar-toggle" id="sidebarToggle">✏️ Marks</button>
-      <button class="btn btn-pink" id="uploadBtn">📄 Open PDF</button>
+      <button class="btn btn-ghost" id="libraryBtn" style="display:none;">🏠<span class="btn-label"> Shelf</span></button>
+      <button class="btn btn-ghost sidebar-toggle" id="sidebarToggle">✏️<span class="btn-label"> Marks</span></button>
+      <button class="btn btn-pink" id="uploadBtn">📄<span class="btn-label"> Open PDF</span></button>
       <input type="file" id="fileInput" accept="application/pdf" />
     </div>
   </div>
@@ -1133,7 +1164,8 @@ async function goToPage(num, skipSave){
   try{
     const page = await pdfDoc.getPage(num);
     const viewportBase = page.getViewport({ scale: 1 });
-    const containerWidth = Math.min(el('readerViewport').clientWidth - 60, 900);
+    const sidePad = window.innerWidth <= 780 ? 16 : 60;     
+    const containerWidth = Math.min(el('readerViewport').clientWidth - sidePad, 900);
     const scale = Math.max(containerWidth / viewportBase.width, 0.4);
     const viewport = page.getViewport({ scale });
     const dpr = window.devicePixelRatio || 1;
