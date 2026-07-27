@@ -334,6 +334,27 @@
     .btn-label{display:none;}
     .btn{padding:8px;}
   }
+  .settings-view{flex:1;overflow:auto;padding:36px 20px 90px;display:flex;flex-direction:column;align-items:center;}
+.settings-inner{width:100%;max-width:560px;}
+.settings-section{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:18px;margin-bottom:18px;box-shadow:0 4px 0 var(--line);}
+.settings-section h3{font-family:var(--serif);font-size:15px;margin:0 0 12px;color:var(--pink-dark);}
+.setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);}
+.setting-row:last-child{border-bottom:none;}
+.setting-row .label{font-size:13px;font-weight:800;color:var(--ink);}
+.setting-row .desc{font-size:11.5px;color:var(--ink-soft);font-weight:600;margin-top:2px;}
+.setting-row select{border:2px solid var(--line);border-radius:10px;padding:6px 10px;font-family:var(--sans);font-weight:700;font-size:12.5px;color:var(--ink);background:#fff;}
+.switch{position:relative;width:44px;height:26px;flex-shrink:0;}
+.switch input{opacity:0;width:0;height:0;position:absolute;}
+.switch .slider{position:absolute;inset:0;background:var(--line);border-radius:20px;cursor:pointer;transition:background .15s;}
+.switch .slider:before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,0.3);}
+.switch input:checked + .slider{background:var(--pink);}
+.switch input:checked + .slider:before{transform:translateX(18px);}
+.danger-zone{border-color:#F3B0B0;}
+.danger-zone h3{color:#D64545;}
+.btn-danger{background:#E14848;box-shadow:0 4px 0 #B23333;}
+.btn-danger:active{box-shadow:0 1px 0 #B23333;}
+.about-row{font-size:12.5px;color:var(--ink-soft);font-weight:700;padding:6px 0;}
+body.reduce-motion *{animation:none !important; transition:none !important;}
 </style>
 </head>
 <body>
@@ -357,10 +378,7 @@
     <div class="topbar-actions">
       <button class="btn btn-ghost" id="libraryBtn" style="display:none;">🏠<span class="btn-label"> Shelf</span></button>
       <button class="btn btn-ghost sidebar-toggle" id="sidebarToggle">✏️<span class="btn-label"> Marks</span></button>
-      <button class="btn btn-ghost" id="settingsBtn" title="Settings">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        <span class="btn-label"> Settings</span>
-      </button>
+      <button class="btn btn-ghost" id="settingsBtn">⚙️<span class="btn-label"> Settings</span></button>
       <button class="btn btn-pink" id="uploadBtn">📄<span class="btn-label"> Open PDF</span></button>
       <input type="file" id="fileInput" accept="application/pdf" />
     </div>
@@ -407,6 +425,70 @@
           <svg class="ink-layer" id="inkLayer"></svg>
           <div class="notes-layer" id="notesLayer"></div>
         </div>
+      </div>
+    </div>
+    <div class="settings-view" id="settingsView" style="display:none;">
+      <div class="settings-inner">
+        <div class="section-title">⚙️ Settings</div>
+
+        <div class="settings-section">
+          <h3>General</h3>
+          <div class="setting-row">
+            <div><div class="label">Theme</div><div class="desc">Light, dark, or match your device</div></div>
+            <select id="settingThemeSelect"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select>
+          </div>
+          <div class="setting-row">
+            <div><div class="label">Reduce animations</div></div>
+            <label class="switch"><input type="checkbox" id="settingReduceAnim"><span class="slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="label">Accent colour</div><div class="desc">Coming soon</div></div>
+            <select disabled><option>Pink (default)</option></select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Reading</h3>
+          <div class="setting-row">
+            <div><div class="label">Default zoom</div></div>
+            <select id="settingDefaultZoom"><option value="1">Fit width</option><option value="1.25">125%</option><option value="1.5">150%</option></select>
+          </div>
+          <div class="setting-row">
+            <div><div class="label">Swipe navigation</div></div>
+            <label class="switch"><input type="checkbox" id="settingSwipeToggle" checked><span class="slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="label">Reading direction</div></div>
+            <select id="settingReadingDir"><option value="ltr">Left to right</option><option value="rtl">Right to left</option></select>
+          </div>
+          <div class="setting-row">
+            <div><div class="label">Page transition</div></div>
+            <select id="settingPageTransition"><option value="none">None</option><option value="fade">Fade</option><option value="slide">Slide</option></select>
+          </div>
+          <div class="setting-row">
+            <div><div class="label">Daily reading goal (pages)</div></div>
+            <input type="number" id="settingDailyGoal" min="1" style="width:64px;padding:6px;border-radius:10px;border:2px solid var(--line);text-align:center;">
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Data</h3>
+          <div class="setting-row"><div class="label">Export data</div><button class="btn btn-ghost" disabled>Coming soon</button></div>
+          <div class="setting-row"><div class="label">Import data</div><button class="btn btn-ghost" disabled>Coming soon</button></div>
+        </div>
+
+        <div class="settings-section">
+          <h3>About</h3>
+          <div class="about-row">Marginalia v1.0.0</div>
+          <div class="about-row">Privacy Policy · Licences · Contact</div>
+        </div>
+
+        <div class="settings-section danger-zone">
+          <h3>Danger Zone</h3>
+          <button class="btn btn-danger" id="resetEverythingBtn">Reset Everything</button>
+        </div>
+
+        <button class="btn btn-ghost" id="settingsBackBtn" style="margin-top:6px;">‹ Back</button>
       </div>
     </div>
 
@@ -489,7 +571,18 @@
       </div>
     </div>
   </div>
-
+  
+<div class="modal-scrim" id="resetConfirmScrim">
+    <div class="modal">
+      <h2>Reset Everything?</h2>
+      <p class="sub">This will permanently delete all books, highlights, notes, bookmarks, drawings, progress, achievements, and settings stored on this device.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="resetCancelBtn">Cancel</button>
+        <button class="btn btn-danger" id="resetConfirmBtn">Reset Everything</button>
+      </div>
+    </div>
+  </div>
+  
   <div class="celebrate-scrim" id="celebrateScrim">
     <div class="celebrate-card" id="celebrateCard">
       <div id="mascotCelebrate"></div>
@@ -744,30 +837,49 @@ async function storageSetWithRetry(key, value, shared, attempts){
     }
   }
 }
+  // ---------------- StorageManager: the only thing allowed to touch window.storage ----------------
+const StorageManager = {
+  async load(key, shared=false){
+    try{
+      const res = await window.storage.get(key, shared);
+      return (res && res.value != null) ? JSON.parse(res.value) : null;
+    }catch(e){ return null; }
+  },
+  async save(key, value, shared=false){
+    try{ await storageSetWithRetry(key, JSON.stringify(value), shared); return true; }
+    catch(e){ showToast("Couldn't save — will retry"); return false; }
+  },
+  async update(key, updaterFn, fallback, shared=false){
+    const current = (await StorageManager.load(key, shared)) ?? fallback;
+    const next = updaterFn(current);
+    await StorageManager.save(key, next, shared);
+    return next;
+  },
+  async remove(key, shared=false){
+    try{ await window.storage.delete(key, shared); return true; }catch(e){ return false; }
+  },
+  async listKeys(prefix='', shared=false){
+    try{ const res = await window.storage.list(prefix, shared); return (res && res.keys) || []; }
+    catch(e){ return []; }
+  },
+  async reset(){
+    for (const k of await StorageManager.listKeys('', false)) await StorageManager.remove(k, false);
+    for (const k of await StorageManager.listKeys('', true)) await StorageManager.remove(k, true);
+  }
+};
 
 // ---------------- storage: books ----------------
 async function loadBookState(id){
-  try{
-    const res = await window.storage.get('book:' + id, false);
-    if (res && res.value) return JSON.parse(res.value);
-  }catch(e){}
-  return null;
+  return StorageManager.load('book:' + id, false);
 }
 
 // A lightweight index of every book's shelf-card info, kept as ONE key so the shelf
 // can load with a single storage.get instead of one get() per book.
 async function loadLibraryIndex(){
-  try{
-    const res = await window.storage.get('library-index', false);
-    if (res && res.value) return JSON.parse(res.value);
-  }catch(e){}
-  return {};
+  return (await StorageManager.load('library-index', false)) || {};
 }
 async function saveLibraryIndexEntry(bookKey, summary){
-  const idx = await loadLibraryIndex();
-  idx[bookKey] = summary;
-  try{ await storageSetWithRetry('library-index', JSON.stringify(idx), false); }
-  catch(e){ /* non-fatal, shelf will just be stale until next successful save */ }
+  await StorageManager.update('library-index', idx => { idx[bookKey] = summary; return idx; }, {});
 }
 
 let saveTimer = null;
@@ -782,18 +894,15 @@ async function flushBookState(){
   if (saveInFlight){ saveQueued = true; return; }
   saveInFlight = true;
   const bookKey = 'book:' + currentBookId;
-  try{
-    await storageSetWithRetry(bookKey, JSON.stringify(state), false);
+  const ok = await StorageManager.save(bookKey, state, false);
+  if (ok){
     await saveLibraryIndexEntry(bookKey, {
       key: bookKey, title: state.title, numPages: state.numPages,
       currentPage: state.currentPage, lastOpened: state.lastOpened
     });
-  }catch(e){
-    showToast("Couldn't save — will retry");
-  }finally{
-    saveInFlight = false;
-    if (saveQueued){ saveQueued = false; flushBookState(); }
   }
+  saveInFlight = false;
+  if (saveQueued){ saveQueued = false; flushBookState(); }
 }
 async function listLibrary(){
   const idx = await loadLibraryIndex();
@@ -804,20 +913,12 @@ async function listLibrary(){
 
 // ---------------- storage: wishlist ----------------
 async function loadWishlist(){
-  try{
-    const res = await window.storage.get('wishlist', false);
-    if (res && res.value) return JSON.parse(res.value);
-  }catch(e){}
-  return [];
+  return (await StorageManager.load('wishlist', false)) || [];
 }
 async function saveWishlist(list){
-  try{
-    await storageSetWithRetry('wishlist', JSON.stringify(list), false);
-    return true;
-  }catch(e){
-    showToast("Couldn't save that — check your connection and try again");
-    return false;
-  }
+  const ok = await StorageManager.save('wishlist', list, false);
+  if (!ok) showToast("Couldn't save that — check your connection and try again");
+  return ok;
 }
 
 // ---------------- storage: streak ----------------
@@ -848,30 +949,21 @@ function ensureStreakDefaults(streak){
   return streak;
 }
 async function loadStreak(){
-  let streak;
-  try{
-    const res = await window.storage.get('streak', false);
-    streak = (res && res.value) ? JSON.parse(res.value) : null;
-  }catch(e){ streak = null; }
-  if (!streak) streak = { currentStreak: 0, longestStreak: 0, lastReadDate: null, history: {}, goalPages: 10 };
+  const streak = (await StorageManager.load('streak', false))
+    || { currentStreak: 0, longestStreak: 0, lastReadDate: null, history: {}, goalPages: 10 };
   return ensureStreakDefaults(streak);
 }
 async function saveStreak(streak){
-  try{ await storageSetWithRetry('streak', JSON.stringify(streak), false); }
-  catch(e){ /* silent, non-critical */ }
+  await StorageManager.save('streak', streak, false);
 }
 async function loadAchievements(){
-  try{
-    const res = await window.storage.get('achievements', false);
-    if (res && res.value) return JSON.parse(res.value);
-  }catch(e){}
-  return {};
+  return (await StorageManager.load('achievements', false)) || {};
 }
 async function unlockAchievement(id, emoji, label){
   const ach = await loadAchievements();
-  if (ach[id]) return false; // never unlock twice
+  if (ach[id]) return false;
   ach[id] = { unlockedAt: Date.now() };
-  try{ await storageSetWithRetry('achievements', JSON.stringify(ach), false); }catch(e){}
+  await StorageManager.save('achievements', ach, false);
   showToast(`${emoji} Achievement unlocked: ${label}`);
   return true;
 }
@@ -1152,10 +1244,8 @@ async function renderShelf(){
     if (delBtn) delBtn.addEventListener('click', async (e)=>{
       e.stopPropagation();
       if (!confirm("Remove this book's bookmarks, notes and highlights? This can't be undone.")) return;
-      try{ await window.storage.delete(b.key, false); }catch(err){}
-      const idx = await loadLibraryIndex();
-      delete idx[b.key];
-      await storageSetWithRetry('library-index', JSON.stringify(idx), false).catch(()=>{});
+     await StorageManager.remove(b.key, false);
+      await StorageManager.update('library-index', idx => { delete idx[b.key]; return idx; }, {});
       renderShelf();
     });
   });
@@ -1870,14 +1960,19 @@ function renderSidebarTab(){
 }
 
 // ---------------- nav controls ----------------
-el('prevBtn').addEventListener('click', ()=>{ if (isBrushTool(activeTool)) return; goToPage(state.currentPage - 1); });
-el('nextBtn').addEventListener('click', ()=>{ if (isBrushTool(activeTool)) return; goToPage(state.currentPage + 1); });
-el('pageInput').addEventListener('keydown', (e)=>{ if (e.key==='Enter'){ if (!isBrushTool(activeTool)) goToPage(parseInt(e.target.value)||1); e.target.blur(); } });
+// Single source of truth: ANY active tool (not just brush tools) locks navigation.
+// This is what buttons, keyboard, swipe, and the spine all check now — no more
+// per-input-type inconsistency.
+function isNavLocked(){ return activeTool !== 'none'; }
+
+el('prevBtn').addEventListener('click', ()=>{ if (isNavLocked()) return; goToPage(state.currentPage - 1); });
+el('nextBtn').addEventListener('click', ()=>{ if (isNavLocked()) return; goToPage(state.currentPage + 1); });
+el('pageInput').addEventListener('keydown', (e)=>{ if (e.key==='Enter'){ if (!isNavLocked()) goToPage(parseInt(e.target.value)||1); e.target.blur(); } });
 document.addEventListener('keydown', (e)=>{
   if (!state) return;
   const tag = (e.target.tagName||'').toLowerCase();
   if (tag==='textarea' || tag==='input') return;
-  if (isBrushTool(activeTool)) return;
+  if (isNavLocked()) return;
   if (e.key==='ArrowRight' || e.key==='PageDown') goToPage(state.currentPage+1);
   if (e.key==='ArrowLeft' || e.key==='PageUp') goToPage(state.currentPage-1);
 });
@@ -1975,13 +2070,13 @@ el('readerViewport').addEventListener('touchend', (e)=>{
     lastTapTime = now; lastTapX = e.changedTouches[0].clientX; lastTapY = e.changedTouches[0].clientY;
   }
 
-  // No page-turn swipe while a drawing tool is active, a note is being placed, or the page is zoomed in
-  if (isBrushTool(activeTool) || activeTool === 'eraser' || activeTool === 'note') return;
+  // No page-turn swipe while ANY tool is active, or the page is zoomed in
+  if (isNavLocked() || !cachedSettings.swipeEnabled) return;
   if (pdfZoom > 1.05) return;
   if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy)*1.5){ if (dx < 0) goToPage(state.currentPage+1); else goToPage(state.currentPage-1); }
 });
 el('spine').addEventListener('click', (e)=>{
-  if (!state || isBrushTool(activeTool)) return;
+  if (!state || isNavLocked()) return;
   const rect = el('spine').getBoundingClientRect();
   const frac = (e.clientY - rect.top) / rect.height;
   goToPage(Math.round(frac * state.numPages) + 1);
@@ -2013,8 +2108,77 @@ el('dropzone').addEventListener('drop', (e)=>{ e.preventDefault(); el('dropzone'
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/sw.js");
 }
+  // ---------------- settings ----------------
+const DEFAULT_SETTINGS = {
+  theme: 'system', reduceAnimations: false, accentColor: 'pink',
+  defaultZoom: 1, swipeEnabled: true, readingDirection: 'ltr',
+  pageTransition: 'none', dailyGoal: 10
+};
+let cachedSettings = { ...DEFAULT_SETTINGS };
+async function loadSettings(){
+  cachedSettings = { ...DEFAULT_SETTINGS, ...(await StorageManager.load('settings', false) || {}) };
+  return cachedSettings;
+}
+async function saveSettings(s){ cachedSettings = s; await StorageManager.save('settings', s, false); }
+
+function openSettingsView(){
+  el('shelfView').style.display = 'none';
+  el('readerViewport').style.display = 'none';
+  el('spine').style.display = 'none';
+  el('sidebar').style.display = 'none';
+  el('pageNav').style.display = 'none';
+  el('bookMeta').style.display = 'none';
+  el('libraryBtn').style.display = 'none';
+  el('toolFabWrap').style.display = 'none';
+  el('readerMascot').style.display = 'none';
+  el('fabAdd').style.display = 'none';
+  el('settingsView').style.display = 'flex';
+  renderSettingsView();
+}
+function closeSettingsView(){
+  el('settingsView').style.display = 'none';
+  if (pdfDoc){ enterReader(); }
+  else { el('fabAdd').style.display = 'flex'; el('shelfView').style.display = 'flex'; renderShelf(); }
+}
+async function renderSettingsView(){
+  const s = await loadSettings();
+  el('settingThemeSelect').value = s.theme;
+  el('settingReduceAnim').checked = s.reduceAnimations;
+  el('settingDefaultZoom').value = String(s.defaultZoom);
+  el('settingSwipeToggle').checked = s.swipeEnabled;
+  el('settingReadingDir').value = s.readingDirection;
+  el('settingPageTransition').value = s.pageTransition;
+  el('settingDailyGoal').value = s.dailyGoal;
+}
+async function updateSetting(key, value){
+  const s = await loadSettings();
+  s[key] = value;
+  await saveSettings(s);
+  if (key === 'reduceAnimations') document.body.classList.toggle('reduce-motion', value);
+  if (key === 'dailyGoal'){ const streak = await loadStreak(); streak.goalPages = value; await saveStreak(streak); }
+}
+el('settingsBtn').addEventListener('click', openSettingsView);
+el('settingsBackBtn').addEventListener('click', closeSettingsView);
+el('settingThemeSelect').addEventListener('change', e=> updateSetting('theme', e.target.value));
+el('settingReduceAnim').addEventListener('change', e=> updateSetting('reduceAnimations', e.target.checked));
+el('settingDefaultZoom').addEventListener('change', e=> updateSetting('defaultZoom', parseFloat(e.target.value)));
+el('settingSwipeToggle').addEventListener('change', e=> updateSetting('swipeEnabled', e.target.checked));
+el('settingReadingDir').addEventListener('change', e=> updateSetting('readingDirection', e.target.value));
+el('settingPageTransition').addEventListener('change', e=> updateSetting('pageTransition', e.target.value));
+el('settingDailyGoal').addEventListener('change', e=> updateSetting('dailyGoal', parseInt(e.target.value)||10));
+
+el('resetEverythingBtn').addEventListener('click', ()=> el('resetConfirmScrim').classList.add('show'));
+el('resetCancelBtn').addEventListener('click', ()=> el('resetConfirmScrim').classList.remove('show'));
+el('resetConfirmBtn').addEventListener('click', async ()=>{
+  el('resetConfirmBtn').disabled = true;
+  el('resetConfirmBtn').textContent = 'Resetting…';
+  await StorageManager.reset();
+  location.reload();
+});
 // init
 checkStorageAvailability().then(async ()=>{
+  const s = await loadSettings();
+  if (s.reduceAnimations) document.body.classList.add('reduce-motion');
   await checkWelcomeBackMessage();
   renderShelf();
 });
