@@ -355,6 +355,44 @@
 .btn-danger:active{box-shadow:0 1px 0 #B23333;}
 .about-row{font-size:12.5px;color:var(--ink-soft);font-weight:700;padding:6px 0;}
 body.reduce-motion *{animation:none !important; transition:none !important;}
+
+/* ---------- stats & achievements ---------- */
+.stats-view, .achievements-view{flex:1;overflow:auto;padding:36px 20px 90px;display:flex;flex-direction:column;align-items:center;}
+.stats-inner, .ach-inner{width:100%;max-width:680px;}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(140px,1fr));gap:12px;margin-bottom:20px;}
+.stat-card{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 4px 0 var(--line);text-align:center;}
+.stat-icon{font-size:22px;margin-bottom:6px;}
+.stat-n{font-family:var(--serif);font-size:22px;font-weight:800;color:var(--pink-dark);}
+.stat-l{font-size:11px;color:var(--ink-soft);font-weight:700;margin-top:2px;}
+.goals-card{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:16px;margin-bottom:20px;box-shadow:0 4px 0 var(--line);}
+.goal-row{margin-bottom:14px;}
+.goal-row:last-child{margin-bottom:0;}
+.goal-row-top{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:800;color:var(--ink);margin-bottom:6px;}
+.goal-row-top input{width:52px;padding:4px 6px;border-radius:8px;border:2px solid var(--line);text-align:center;font-family:var(--sans);font-weight:700;font-size:12px;}
+.goal-bar-track{height:10px;background:var(--panel-2);border-radius:20px;overflow:hidden;border:2px solid var(--line);}
+.goal-bar-fill{height:100%;border-radius:20px;transition:width .3s ease;background:linear-gradient(90deg,var(--pink),var(--butter));}
+.goal-bar-fill.done{background:linear-gradient(90deg,var(--mint),var(--sky));}
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(130px,1fr));gap:12px;}
+.ach-card{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:14px 10px;text-align:center;box-shadow:0 4px 0 var(--line);}
+.ach-card.locked{opacity:0.5;}
+.ach-emoji{font-size:26px;margin-bottom:6px;}
+.ach-label{font-size:11.5px;font-weight:800;color:var(--ink);line-height:1.3;}
+.ach-date{font-size:10px;color:var(--ink-soft);font-weight:700;margin-top:4px;}
+
+/* ---------- pen options bar ---------- */
+.pen-options{
+  position:fixed;bottom:88px;left:50%;transform:translateX(-50%);display:none;gap:10px;align-items:center;
+  background:#fff;padding:8px 12px;border-radius:20px;box-shadow:0 6px 0 var(--line), 0 10px 20px rgba(0,0,0,0.15);
+  border:2px solid var(--line);z-index:47;
+}
+.pen-options.show{display:flex;}
+.po-colors{display:flex;gap:6px;}
+.po-colors button{width:20px;height:20px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;}
+.po-colors button.selected{border-color:var(--ink);}
+.po-sizes{display:flex;gap:5px;border-left:2px solid var(--line);padding-left:10px;}
+.po-sizes button{width:26px;height:26px;border-radius:8px;border:2px solid var(--line);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
+.po-sizes button.selected{border-color:var(--pink);background:var(--panel-2);}
+.po-sizes button span{border-radius:50%;background:var(--ink);display:block;}
 </style>
 </head>
 <body>
@@ -378,6 +416,8 @@ body.reduce-motion *{animation:none !important; transition:none !important;}
     <div class="topbar-actions">
       <button class="btn btn-ghost" id="libraryBtn" style="display:none;">🏠<span class="btn-label"> Shelf</span></button>
       <button class="btn btn-ghost sidebar-toggle" id="sidebarToggle">✏️<span class="btn-label"> Marks</span></button>
+      <button class="btn btn-ghost" id="statsBtn">📊<span class="btn-label"> Stats</span></button>
+      <button class="btn btn-ghost" id="achBtn">🏆<span class="btn-label"> Achievements</span></button>
       <button class="btn btn-ghost" id="settingsBtn">⚙️<span class="btn-label"> Settings</span></button>
       <button class="btn btn-pink" id="uploadBtn">📄<span class="btn-label"> Open PDF</span></button>
       <input type="file" id="fileInput" accept="application/pdf" />
@@ -492,6 +532,23 @@ body.reduce-motion *{animation:none !important; transition:none !important;}
       </div>
     </div>
 
+    <div class="stats-view" id="statsView" style="display:none;">
+      <div class="stats-inner">
+        <div class="section-title">📊 Reading Statistics</div>
+        <div class="goals-card" id="goalsCard"></div>
+        <div class="stats-grid" id="statsGrid"></div>
+        <button class="btn btn-ghost" id="statsBackBtn">‹ Back</button>
+      </div>
+    </div>
+
+    <div class="achievements-view" id="achievementsView" style="display:none;">
+      <div class="ach-inner">
+        <div class="section-title">🏆 Achievements</div>
+        <div class="ach-grid" id="achGrid"></div>
+        <button class="btn btn-ghost" id="achBackBtn" style="margin-top:18px;">‹ Back</button>
+      </div>
+    </div>
+
     <div class="sidebar" id="sidebar" style="display:none;">
       <div class="sidebar-tabs">
         <button class="sidebar-tab active" data-tab="bookmarks">Bookmarks</button>
@@ -516,21 +573,13 @@ body.reduce-motion *{animation:none !important; transition:none !important;}
   <div class="reader-mascot" id="readerMascot" style="display:none;" title="Your reading buddy"></div>
 
   <div class="tool-fab-wrap" id="toolFabWrap" style="display:none;">
-    <div class="tool-menu" id="toolMenuColors">
-      <button class="tool-menu-item" data-back title="Back">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-        <span>Back</span>
-      </button>
-      <button class="tool-menu-item tool-color pink" data-tool="pink" title="Pink highlighter"></button>
-      <button class="tool-menu-item tool-color mint" data-tool="mint" title="Mint highlighter"></button>
-      <button class="tool-menu-item tool-color sky" data-tool="sky" title="Sky highlighter"></button>
-    </div>
+    <div class="tool-menu" id="toolMenuColors"></div>
     <div class="tool-menu" id="toolMenuMain">
-      <button class="tool-menu-item" data-open-colors title="Highlighter — pick a color, then drag anywhere">
+      <button class="tool-menu-item" data-open-palette="hl" title="Highlighter — pick a color, then drag anywhere">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-9.5 9.5-5 1 1-5L17 3z"/><path d="M3 21l3-1"/></svg>
         <span>Highlighter</span>
       </button>
-      <button class="tool-menu-item" data-tool="underline" title="Underline — drag anywhere">
+      <button class="tool-menu-item" data-open-palette="ul" title="Underline — pick a color, then drag anywhere">
         <span class="tool-underline-icon">U</span>
         <span>Underline</span>
       </button>
@@ -553,6 +602,7 @@ body.reduce-motion *{animation:none !important; transition:none !important;}
     </button>
   </div>
   <div class="tool-hint" id="toolHint"></div>
+  <div class="pen-options" id="penOptions"></div>
 
   <!-- add-to-wishlist modal -->
   <div class="modal-scrim" id="addModalScrim">
@@ -969,14 +1019,59 @@ async function unlockAchievement(id, emoji, label){
 }
 const ACHIEVEMENTS = {
   firstBook:      { emoji:'📖', label:'First Book' },
+  fiveBooks:      { emoji:'📚', label:'Five Books Finished' },
+  tenBooks:       { emoji:'🎓', label:'Ten Books Finished' },
   streak7:        { emoji:'🔥', label:'7 Day Streak' },
+  streak30:       { emoji:'🥈', label:'30 Day Streak' },
   pages100:       { emoji:'📚', label:'Read 100 Pages' },
   pages1000:      { emoji:'📘', label:'Read 1000 Pages' },
   firstHighlight: { emoji:'📝', label:'First Highlight' },
+  highlights100:  { emoji:'🖍️', label:'100 Highlights' },
   firstNote:      { emoji:'📌', label:'First Sticky Note' },
+  notes50:        { emoji:'🗒️', label:'50 Sticky Notes' },
   firstUnderline: { emoji:'✍', label:'First Underline' },
+  hours10:        { emoji:'⏱️', label:'10 Hours Read' },
+  hours50:        { emoji:'⏰', label:'50 Hours Read' },
+  hours100:       { emoji:'🕰️', label:'100 Hours Read' },
   goalCrusher:    { emoji:'🎯', label:'Goal Crusher (10 daily goals)' }
 };
+const ACHIEVEMENT_ORDER = ['firstBook','fiveBooks','tenBooks','firstHighlight','highlights100','firstNote','notes50','firstUnderline','streak7','streak30','goalCrusher','hours10','hours50','hours100','pages100','pages1000'];
+
+// ---------------- global annotation counters (drive the Statistics page) ----------------
+async function bumpGlobalCount(key, delta){
+  const c = await StorageManager.update('global-counts', c => { c[key] = Math.max(0, (c[key]||0) + delta); return c; }, {});
+  if (key === 'highlights' && c.highlights >= 100) unlockAchievement('highlights100', ACHIEVEMENTS.highlights100.emoji, ACHIEVEMENTS.highlights100.label);
+  if (key === 'notes' && c.notes >= 50) unlockAchievement('notes50', ACHIEVEMENTS.notes50.emoji, ACHIEVEMENTS.notes50.label);
+  return c;
+}
+
+// ---------------- reading sessions (start/end/duration/pages/book) ----------------
+let currentSession = null;
+function startSession(){
+  currentSession = { id:'s'+Date.now(), bookId: currentBookId, bookTitle: state.title, startTime: Date.now(), pagesVisited: new Set([state.currentPage]) };
+}
+function trackSessionPage(pageNum){
+  if (!currentSession) return;
+  currentSession.pagesVisited.add(pageNum);
+}
+async function endSession(){
+  if (!currentSession) return;
+  const s = currentSession; currentSession = null;
+  const duration = Date.now() - s.startTime;
+  if (duration < 5000) return; // ignore accidental opens under 5s
+  const rec = { id:s.id, bookId:s.bookId, bookTitle:s.bookTitle, startTime:s.startTime, endTime:Date.now(), duration, pagesRead:s.pagesVisited.size };
+  const all = await StorageManager.update('sessions', list => { list.push(rec); if (list.length>800) list.splice(0,list.length-800); return list; }, []);
+  const totalMs = all.reduce((a,x)=>a+(x.duration||0),0);
+  const hrs = totalMs / 3600000;
+  if (hrs >= 10)  unlockAchievement('hours10', ACHIEVEMENTS.hours10.emoji, ACHIEVEMENTS.hours10.label);
+  if (hrs >= 50)  unlockAchievement('hours50', ACHIEVEMENTS.hours50.emoji, ACHIEVEMENTS.hours50.label);
+  if (hrs >= 100) unlockAchievement('hours100', ACHIEVEMENTS.hours100.emoji, ACHIEVEMENTS.hours100.label);
+}
+async function logBookFinished(){
+  const log = await StorageManager.update('finished-log', list => { list.push({ bookId: currentBookId, title: state.title, finishedAt: Date.now() }); return list; }, []);
+  if (log.length >= 5)  unlockAchievement('fiveBooks', ACHIEVEMENTS.fiveBooks.emoji, ACHIEVEMENTS.fiveBooks.label);
+  if (log.length >= 10) unlockAchievement('tenBooks', ACHIEVEMENTS.tenBooks.emoji, ACHIEVEMENTS.tenBooks.label);
+}
 // Page turns happen fast — flipping through a chapter used to fire a get+set to the
 // streak key on EVERY single page. That's now batched in memory and flushed on the
 // same debounce as the book save, so a quick flip-through costs one write, not N.
@@ -997,7 +1092,7 @@ const GOAL_MILESTONE_TOASTS = [
 ];
 const STREAK_BADGES = [
   { at: 7,   title: '🏅 Bronze Reader',  achievement:'streak7' },
-  { at: 30,  title: '🥈 Silver Reader' },
+  { at: 30,  title: '🥈 Silver Reader',  achievement:'streak30' },
   { at: 100, title: '🥇 Gold Reader' },
   { at: 365, title: '👑 Legendary Reader' }
 ];
@@ -1396,6 +1491,7 @@ function enterReader(){
   el('bookTitleLabel').textContent = state.title;
   el('numPagesLabel').textContent = state.numPages;
   renderSidebarTab();
+  startSession();
 }
 function triggerMascotWave(){
   showToast('👋 Happy reading!');
@@ -1420,6 +1516,7 @@ function returnToShelf(){
   el('readerMascot').style.display = 'none';
   closeToolMenus();
   setActiveTool('none');
+  endSession();
   el('shelfView').style.display = 'flex';
   el('fabAdd').style.display = 'flex';
   pdfDoc = null; state = null; currentBookId = null;
@@ -1484,6 +1581,7 @@ async function goToPage(num, skipSave){
   }
 
   if (!skipSave){ saveBookState(); queueReadingActivity(num); }
+  trackSessionPage(num);
   updateSpine();
   renderSidebarTab();
 
@@ -1498,6 +1596,7 @@ async function goToPage(num, skipSave){
     saveBookState();
     launchCelebration();
     unlockAchievement('firstBook', ACHIEVEMENTS.firstBook.emoji, ACHIEVEMENTS.firstBook.label);
+    logBookFinished();
   }
 
   rendering = false;
@@ -1586,7 +1685,12 @@ function showStreakBadgeCelebration(badge){
 
 // ---------------- tool FAB: tap to open a menu, pick a tool, then mark the page ----------------
 let activeTool = 'none';
-const TOOL_BADGE_COLOR = { pink:'#FF6FA8', mint:'#3FCBA8', sky:'#5FB6F2', underline:'#3A2E3F', pen:'#3A2E3F', note:'#FFC94D', eraser:'#8B7A93' };
+function badgeColorFor(tool){
+  if (tool==='note') return '#FFC94D';
+  if (tool==='eraser') return '#8B7A93';
+  if (tool==='none') return '#3A2E3F';
+  return brushStyleFor(tool).stroke;
+}
 function showToolHint(msg){
   const hint = el('toolHint');
   hint.textContent = msg;
@@ -1616,7 +1720,7 @@ function setActiveTool(tool){
   } else if (tool === 'pen'){
     inkLayer.style.pointerEvents = 'auto';
     showToolHint('Draw anywhere on the page');
-  } else if (tool === 'underline'){
+  } else if (tool.startsWith('ul-')){
     inkLayer.style.pointerEvents = 'auto';
     showToolHint('Draw a line anywhere — under words, in the margin, wherever');
   } else {
@@ -1624,9 +1728,12 @@ function setActiveTool(tool){
     showToolHint('Drag anywhere to highlight, like a real marker');
   }
 
+  el('penOptions').classList.toggle('show', tool === 'pen');
+  if (tool === 'pen') renderPenOptions();
+
   const badge = el('toolFabBadge');
   if (tool === 'none'){ badge.style.display = 'none'; }
-  else { badge.style.display = 'block'; badge.style.background = TOOL_BADGE_COLOR[tool] || '#3A2E3F'; }
+  else { badge.style.display = 'block'; badge.style.background = badgeColorFor(tool); }
 }
 document.getElementById('toolFab').addEventListener('click', ()=>{
   const isOpen = el('toolMenuMain').classList.contains('open') || el('toolMenuColors').classList.contains('open');
@@ -1637,7 +1744,8 @@ document.getElementById('toolFab').addEventListener('click', ()=>{
 document.getElementById('toolMenuMain').addEventListener('click', (e)=>{
   const btn = e.target.closest('.tool-menu-item');
   if (!btn) return;
-  if (btn.dataset.openColors !== undefined){
+  if (btn.dataset.openPalette !== undefined){
+    renderPalette(btn.dataset.openPalette);
     el('toolMenuMain').classList.remove('open');
     el('toolMenuColors').classList.add('open');
     return;
@@ -1670,21 +1778,43 @@ function pointsToPathD(points){
   for (let i=1;i<points.length;i++) d += ` L ${points[i][0].toFixed(1)} ${points[i][1].toFixed(1)}`;
   return d;
 }
-const BRUSH_STYLE = {
-  pink:      { stroke: '#FF6FA8', width: 20, opacity: 0.4, cap: 'round' },
-  mint:      { stroke: '#3FCBA8', width: 20, opacity: 0.4, cap: 'round' },
-  sky:       { stroke: '#5FB6F2', width: 20, opacity: 0.4, cap: 'round' },
-  underline: { stroke: '#E8508C', width: 3,  opacity: 1,   cap: 'round' },
-  pen:       { stroke: '#3A2E3F', width: 3,  opacity: 1,   cap: 'round' }
-};
+const HILITE_COLORS = [['pink','#FF6FA8'],['mint','#3FCBA8'],['sky','#5FB6F2'],['butter','#FFC94D'],['lav','#B49AF0']];
+const UNDERLINE_COLORS = [['pink','#E8508C'],['mint','#2AA989'],['sky','#3E97D6'],['butter','#E8AC1F'],['lav','#9678DE']];
+const PEN_COLORS = [['ink','#3A2E3F'],['pink','#E8508C'],['mint','#2AA989'],['sky','#3E97D6'],['lav','#9678DE']];
+const PEN_SIZES = [2, 4, 7];
+let penColor = PEN_COLORS[0][1];
+let penWidth = PEN_SIZES[0];
+
+function colorHex(list, key){ const f = list.find(c=>c[0]===key); return f ? f[1] : list[0][1]; }
+function brushStyleFor(tool){
+  if (tool.startsWith('hl-')) return { stroke: colorHex(HILITE_COLORS, tool.slice(3)), width: 20, opacity: 0.4, cap: 'round' };
+  if (tool.startsWith('ul-')) return { stroke: colorHex(UNDERLINE_COLORS, tool.slice(3)), width: 3, opacity: 1, cap: 'round' };
+  return { stroke: penColor, width: penWidth, opacity: 1, cap: 'round' };
+}
 function applyBrushAttrs(path, kind){
-  const s = BRUSH_STYLE[kind] || BRUSH_STYLE.pen;
+  const s = brushStyleFor(kind || 'pen');
   path.setAttribute('fill', 'none');
   path.setAttribute('stroke', s.stroke);
   path.setAttribute('stroke-width', s.width);
   path.setAttribute('stroke-linecap', s.cap);
   path.setAttribute('stroke-linejoin', 'round');
   path.setAttribute('opacity', s.opacity);
+}
+function renderPalette(mode){
+  const list = mode === 'ul' ? UNDERLINE_COLORS : HILITE_COLORS;
+  el('toolMenuColors').innerHTML = `
+    <button class="tool-menu-item" data-back title="Back">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      <span>Back</span>
+    </button>
+    ${list.map(([key,hex])=>`<button class="tool-menu-item tool-color" data-tool="${mode}-${key}" style="background:${hex};" title="${key}"></button>`).join('')}`;
+}
+function renderPenOptions(){
+  el('penOptions').innerHTML = `
+    <div class="po-colors">${PEN_COLORS.map(([key,hex])=>`<button data-pen-color="${hex}" style="background:${hex};" class="${hex===penColor?'selected':''}" title="${key}"></button>`).join('')}</div>
+    <div class="po-sizes">${PEN_SIZES.map(sz=>`<button data-pen-size="${sz}" class="${sz===penWidth?'selected':''}" title="${sz}px"><span style="width:${Math.min(sz+4,14)}px;height:${Math.min(sz+4,14)}px;"></span></button>`).join('')}`;
+  el('penOptions').querySelectorAll('[data-pen-color]').forEach(b=> b.addEventListener('click', ()=>{ penColor = b.dataset.penColor; renderPenOptions(); if (state) renderInkForPage(state.currentPage); }));
+  el('penOptions').querySelectorAll('[data-pen-size]').forEach(b=> b.addEventListener('click', ()=>{ penWidth = parseInt(b.dataset.penSize); renderPenOptions(); if (state) renderInkForPage(state.currentPage); }));
 }
 let inkDrawing = false, inkPoints = [], livePathEl = null;
 const inkLayerEl = () => el('inkLayer');
@@ -1696,7 +1826,7 @@ function getInkPoint(e){
   // stroke drawn while zoomed in lands away from the finger and drifts from the page.
   return [(t.clientX - rect.left) / pdfZoom, (t.clientY - rect.top) / pdfZoom];
 }
-function isBrushTool(tool){ return tool==='pink' || tool==='mint' || tool==='sky' || tool==='underline' || tool==='pen'; }
+function isBrushTool(tool){ return tool.startsWith('hl-') || tool.startsWith('ul-') || tool==='pen'; }
 function inkPointerDown(e){
   if (!isBrushTool(activeTool) || pinchActive) return;
   if (e.touches && e.touches.length > 1) return; // second finger just landed — this is a pinch, not a stroke
@@ -1730,8 +1860,9 @@ function inkPointerUp(){
     state.ink[state.currentPage] = state.ink[state.currentPage] || [];
     state.ink[state.currentPage].push({ id, kind: activeTool, points: inkPoints });
     saveBookState();
-    if (activeTool === 'underline') unlockAchievement('firstUnderline', ACHIEVEMENTS.firstUnderline.emoji, ACHIEVEMENTS.firstUnderline.label);
-    else if (activeTool === 'pink' || activeTool === 'mint' || activeTool === 'sky') unlockAchievement('firstHighlight', ACHIEVEMENTS.firstHighlight.emoji, ACHIEVEMENTS.firstHighlight.label);
+    if (activeTool.startsWith('ul-')){ unlockAchievement('firstUnderline', ACHIEVEMENTS.firstUnderline.emoji, ACHIEVEMENTS.firstUnderline.label); bumpGlobalCount('highlights', 1); }
+    else if (activeTool.startsWith('hl-')){ unlockAchievement('firstHighlight', ACHIEVEMENTS.firstHighlight.emoji, ACHIEVEMENTS.firstHighlight.label); bumpGlobalCount('highlights', 1); }
+    else if (activeTool === 'pen'){ bumpGlobalCount('drawings', 1); }
   } else if (livePathEl){
     livePathEl.remove();
   }
@@ -1770,7 +1901,9 @@ function renderInkForPage(pageNum){
       if (activeTool !== 'eraser' || pinchActive) return;
       state.ink[pageNum] = state.ink[pageNum].filter(x=>x.id!==s.id);
       saveBookState();
-      renderInkForPage(pageNum);
+      renderInkForPage(pageNum);      // instant — no page reload/refresh needed
+      renderSidebarTab();
+      bumpGlobalCount(s.kind === 'pen' ? 'drawings' : 'highlights', -1);
       showToast('Removed');
     });
     layer.appendChild(hit);
@@ -1779,12 +1912,20 @@ function renderInkForPage(pageNum){
 
 // ---------------- bookmarks & notes ----------------
 function isBookmarked(page){ return (state.bookmarks||[]).some(b=>b.page===page); }
+const BOOKMARK_COLORS = [['pink','#FF6FA8'],['mint','#3FCBA8'],['sky','#5FB6F2'],['butter','#FFC94D'],['lav','#B49AF0']];
 function toggleBookmark(){
   const page = state.currentPage;
   const idx = (state.bookmarks||[]).findIndex(b=>b.page===page);
   if (idx>-1){ state.bookmarks.splice(idx,1); showToast('Bookmark removed'); }
-  else { state.bookmarks.push({ page, createdAt: Date.now() }); showToast('Page bookmarked 🔖'); }
+  else { state.bookmarks.push({ page, title:'', color: BOOKMARK_COLORS[0][1], createdAt: Date.now() }); showToast('Page bookmarked 🔖'); }
   state.bookmarks.sort((a,b)=>a.page-b.page);
+  saveBookState();
+  renderSidebarTab();
+}
+function editBookmark(b){
+  const title = prompt('Bookmark title (optional):', b.title || '');
+  if (title === null) return;
+  b.title = title.trim();
   saveBookState();
   renderSidebarTab();
 }
@@ -1797,11 +1938,12 @@ function addNote(text, x, y){
   renderSidebarTab();
   renderStickyNotesForPage(state.currentPage);
   unlockAchievement('firstNote', ACHIEVEMENTS.firstNote.emoji, ACHIEVEMENTS.firstNote.label);
+  bumpGlobalCount('notes', 1);
 }
 function deleteItem(type, id){
   state[type] = state[type].filter(i=>i.id!==id);
   saveBookState();
-  if (type==='notes') renderStickyNotesForPage(state.currentPage);
+  if (type==='notes'){ renderStickyNotesForPage(state.currentPage); bumpGlobalCount('notes', -1); }
   renderSidebarTab();
 }
 
@@ -1898,24 +2040,31 @@ document.querySelectorAll('.sidebar-tab').forEach(tab=>{
     renderSidebarTab();
   });
 });
-function highlightBorderClass(kind){
-  return kind==='pink' ? 'pink-b' : kind==='mint' ? 'mint-b' : kind==='sky' ? 'sky-b' : 'underline-b';
-}
 function markLabel(kind){
-  return kind==='pink' ? 'Pink highlight' : kind==='mint' ? 'Mint highlight' : kind==='sky' ? 'Sky highlight' : 'Underline';
+  if (kind.startsWith('hl-')) return kind.slice(3)[0].toUpperCase()+kind.slice(4)+' highlight';
+  if (kind.startsWith('ul-')) return kind.slice(3)[0].toUpperCase()+kind.slice(4)+' underline';
+  return 'Mark';
 }
 function renderSidebarTab(){
   if (!state) return;
   const body = el('sidebarBody');
-  if (activeTab === 'bookmarks'){
+ if (activeTab === 'bookmarks'){
     const marked = isBookmarked(state.currentPage);
     let html = `<button class="sidebar-action" id="bmToggleBtn">${marked ? '★ Remove bookmark from this page' : '☆ Bookmark this page'}</button>`;
     if (!state.bookmarks.length){ html += '<div class="empty-hint">No bookmarks yet. Mark pages you want to find again fast.</div>'; }
-    else { state.bookmarks.forEach(b=>{ html += `<div class="item-card pink-b" data-page="${b.page}"><div class="item-page">Page ${b.page}</div><button class="item-del" data-del="bookmarks" data-id="${b.createdAt}">✕</button></div>`; }); }
+    else { state.bookmarks.forEach(b=>{
+      html += `<div class="item-card" style="border-left:5px solid ${b.color||'#FF6FA8'};" data-page="${b.page}">
+        <div class="item-page">Page ${b.page}</div>
+        ${b.title ? `<div class="item-text">${escapeHtml(b.title)}</div>` : ''}
+        <button class="item-del" data-edit="bookmarks" data-id="${b.createdAt}" style="right:26px;">✎</button>
+        <button class="item-del" data-del="bookmarks" data-id="${b.createdAt}">✕</button>
+      </div>`;
+    }); }
     body.innerHTML = html;
     el('bmToggleBtn').addEventListener('click', toggleBookmark);
     body.querySelectorAll('.item-card').forEach(c=> c.addEventListener('click', (e)=>{ if(e.target.closest('.item-del')) return; goToPage(parseInt(c.dataset.page)); }));
     body.querySelectorAll('[data-del="bookmarks"]').forEach(btn=> btn.addEventListener('click', (e)=>{ e.stopPropagation(); state.bookmarks = state.bookmarks.filter(b=> String(b.createdAt) !== btn.dataset.id); saveBookState(); renderSidebarTab(); }));
+    body.querySelectorAll('[data-edit="bookmarks"]').forEach(btn=> btn.addEventListener('click', (e)=>{ e.stopPropagation(); const b = state.bookmarks.find(x=>String(x.createdAt)===btn.dataset.id); if (b) editBookmark(b); }));
   }
   else if (activeTab === 'notes'){
     let html = `<textarea class="note-input" id="noteInput" placeholder="Write a note about page ${state.currentPage}…"></textarea>
@@ -1939,7 +2088,7 @@ function renderSidebarTab(){
         const counts = {};
         strokes.forEach(s=> counts[s.kind] = (counts[s.kind]||0)+1);
         const summary = Object.keys(counts).map(k=> `${counts[k]} ${markLabel(k).toLowerCase()}${counts[k]>1?'s':''}`).join(', ');
-        html += `<div class="item-card ${highlightBorderClass(strokes[0].kind)}" data-page="${p}">
+        html += `<div class="item-card" style="border-left:5px solid ${brushStyleFor(strokes[0].kind).stroke};" data-page="${p}">
           <div class="item-page">Page ${p}</div>
           <div class="item-text">${summary}</div>
           <button class="item-del" data-del="highlights-page" data-page="${p}">✕</button>
@@ -1951,8 +2100,10 @@ function renderSidebarTab(){
     body.querySelectorAll('[data-del="highlights-page"]').forEach(btn=> btn.addEventListener('click', (e)=>{
       e.stopPropagation();
       const p = parseInt(btn.dataset.page);
+      const removedCount = (state.ink[p]||[]).filter(s=>s.kind!=='pen').length;
       state.ink[p] = (state.ink[p]||[]).filter(s=>s.kind==='pen');
       saveBookState();
+      bumpGlobalCount('highlights', -removedCount);
       if (p === state.currentPage) renderInkForPage(p);
       renderSidebarTab();
     }));
@@ -2175,6 +2326,110 @@ el('resetConfirmBtn').addEventListener('click', async ()=>{
   await StorageManager.reset();
   location.reload();
 });
+// ---------------- goals: daily pages (existing) + daily time + weekly books ----------------
+async function renderGoalsCard(){
+  const streak = await loadStreak();
+  const s = await loadSettings();
+  const sessions = await StorageManager.load('sessions', false) || [];
+  const finishedLog = await StorageManager.load('finished-log', false) || [];
+  const today = todayStr(0);
+  const pagesToday = streak.visitedPagesToday ? streak.visitedPagesToday.length : 0;
+  const goalPages = streak.goalPages || 10;
+
+  const todaysMs = sessions.filter(x=> new Date(x.startTime).toDateString() === new Date().toDateString())
+    .reduce((a,x)=>a+(x.duration||0),0);
+  const goalMinutes = s.dailyGoalMinutes || 20;
+  const minutesToday = Math.round(todaysMs/60000);
+
+  const weekAgo = Date.now() - 7*24*60*60*1000;
+  const weeklyBooks = finishedLog.filter(f=>f.finishedAt>=weekAgo).length;
+  const weeklyBooksGoal = s.weeklyBooksGoal || 1;
+
+  const row = (label, cur, goal, editKey) => {
+    const pct = Math.min(100, Math.round((cur/Math.max(1,goal))*100));
+    const done = cur >= goal;
+    return `<div class="goal-row">
+      <div class="goal-row-top"><span>${done?'✅ ':''}${label}: ${cur}/<input type="number" min="1" value="${goal}" data-goal-edit="${editKey}"></span></div>
+      <div class="goal-bar-track"><div class="goal-bar-fill ${done?'done':''}" style="width:${pct}%;"></div></div>
+    </div>`;
+  };
+  el('goalsCard').innerHTML =
+    row('Daily Pages', pagesToday, goalPages, 'dailyPages') +
+    row('Daily Minutes', minutesToday, goalMinutes, 'dailyMinutes') +
+    row('Weekly Books', weeklyBooks, weeklyBooksGoal, 'weeklyBooks');
+
+  el('goalsCard').querySelectorAll('[data-goal-edit]').forEach(inp=>{
+    inp.addEventListener('change', async ()=>{
+      const n = parseInt(inp.value)||1;
+      if (inp.dataset.goalEdit === 'dailyPages'){ const st = await loadStreak(); st.goalPages = n; await saveStreak(st); }
+      else if (inp.dataset.goalEdit === 'dailyMinutes'){ await updateSetting('dailyGoalMinutes', n); }
+      else if (inp.dataset.goalEdit === 'weeklyBooks'){ await updateSetting('weeklyBooksGoal', n); }
+      renderGoalsCard();
+    });
+  });
+}
+async function renderStatsPage(){
+  const streak = await loadStreak();
+  const sessions = await StorageManager.load('sessions', false) || [];
+  const counts = await StorageManager.load('global-counts', false) || {};
+  const library = await listLibrary();
+  const finishedCount = library.filter(b=>b.numPages && b.currentPage>=b.numPages).length;
+  const totalMs = sessions.reduce((a,x)=>a+(x.duration||0),0);
+  const avgMs = sessions.length ? Math.round(totalMs/sessions.length) : 0;
+  const fmt = ms=>{ const h=Math.floor(ms/3600000), m=Math.round((ms%3600000)/60000); return h>0 ? `${h}h ${m}m` : `${m}m`; };
+  el('statsGrid').innerHTML = [
+    ['⏱️', fmt(totalMs), 'Total Reading Time'],
+    ['📄', streak.totalPagesRead||0, 'Pages Read'],
+    ['🏆', finishedCount, 'Books Completed'],
+    ['🔥', streak.currentStreak||0, 'Current Streak'],
+    ['🥇', streak.longestStreak||0, 'Longest Streak'],
+    ['⏳', fmt(avgMs), 'Avg Session Length'],
+    ['🖍️', counts.highlights||0, 'Total Highlights'],
+    ['📌', counts.notes||0, 'Total Sticky Notes'],
+    ['✏️', counts.drawings||0, 'Total Drawings']
+  ].map(([icon,n,label])=>`<div class="stat-card"><div class="stat-icon">${icon}</div><div class="stat-n">${n}</div><div class="stat-l">${label}</div></div>`).join('');
+  await renderGoalsCard();
+}
+async function renderAchievementsPage(){
+  const ach = await loadAchievements();
+  el('achGrid').innerHTML = ACHIEVEMENT_ORDER.filter(id=>ACHIEVEMENTS[id]).map(id=>{
+    const a = ACHIEVEMENTS[id]; const got = ach[id];
+    return `<div class="ach-card ${got?'unlocked':'locked'}">
+      <div class="ach-emoji">${got ? a.emoji : '🔒'}</div>
+      <div class="ach-label">${a.label}</div>
+      <div class="ach-date">${got ? new Date(got.unlockedAt).toLocaleDateString() : 'Locked'}</div>
+    </div>`;
+  }).join('');
+}
+function hideAllViews(){
+  el('shelfView').style.display = 'none';
+  el('readerViewport').style.display = 'none';
+  el('spine').style.display = 'none';
+  el('sidebar').style.display = 'none';
+  el('pageNav').style.display = 'none';
+  el('bookMeta').style.display = 'none';
+  el('libraryBtn').style.display = 'none';
+  el('toolFabWrap').style.display = 'none';
+  el('readerMascot').style.display = 'none';
+  el('fabAdd').style.display = 'none';
+  el('settingsView').style.display = 'none';
+  el('statsView').style.display = 'none';
+  el('achievementsView').style.display = 'none';
+}
+function closeToOrigin(){
+  hideAllViews();
+  if (pdfDoc){ enterReader(); }
+  else { el('fabAdd').style.display = 'flex'; el('shelfView').style.display = 'flex'; renderShelf(); }
+}
+el('statsBtn').addEventListener('click', ()=>{ hideAllViews(); el('statsView').style.display = 'flex'; renderStatsPage(); });
+el('statsBackBtn').addEventListener('click', closeToOrigin);
+el('achBtn').addEventListener('click', ()=>{ hideAllViews(); el('achievementsView').style.display = 'flex'; renderAchievementsPage(); });
+el('achBackBtn').addEventListener('click', closeToOrigin);
+
+// end the session reliably even on tab close / app switch, not just the in-app Shelf button
+document.addEventListener('visibilitychange', ()=>{ if (document.visibilityState === 'hidden') endSession(); });
+window.addEventListener('pagehide', ()=> endSession());
+
 // init
 checkStorageAvailability().then(async ()=>{
   const s = await loadSettings();
