@@ -1900,7 +1900,7 @@ function renderInkForPage(pageNum){
     hit.setAttribute('d', pointsToPathD(s.points));
     hit.setAttribute('fill', 'none');
     hit.setAttribute('stroke', 'transparent');
-    hit.setAttribute('stroke-width', Math.max(28, (BRUSH_STYLE[s.kind]||BRUSH_STYLE.pen).width + 16));
+    hit.setAttribute('stroke-width', Math.max(28, brushStyleFor(s.kind || 'pen').width + 16));
     hit.setAttribute('stroke-linecap', 'round');
     hit.setAttribute('stroke-linejoin', 'round');
     hit.style.cursor = 'pointer';
