@@ -355,6 +355,17 @@
 .btn-danger:active{box-shadow:0 1px 0 #B23333;}
 .about-row{font-size:12.5px;color:var(--ink-soft);font-weight:700;padding:6px 0;}
 body.reduce-motion *{animation:none !important; transition:none !important;}
+.setting-row select:disabled, .setting-row button:disabled{opacity:0.55;cursor:not-allowed;}
+
+/* ---------- dark theme ---------- */
+/* Overrides the same custom properties every existing var(--bg)/var(--panel)/etc. rule
+   already uses, so nothing else in the stylesheet needs to change to support this. */
+body.theme-dark{
+  --bg:#221A27; --panel:#2B2130; --panel-2:#372B3E; --ink:#F2E9F7; --ink-soft:#B7A6C4; --line:#463A50;
+}
+body.theme-dark .page-mat{background:#2B2130;box-shadow:0 10px 0 var(--line), 0 14px 30px rgba(0,0,0,0.35);}
+body.theme-dark .page-canvas-wrap, body.theme-dark canvas{background:#fff;} /* PDF page itself stays legible regardless of theme */
+</style>
 
 /* ---------- stats & achievements ---------- */
 .stats-view, .achievements-view{flex:1;overflow:auto;padding:36px 20px 90px;display:flex;flex-direction:column;align-items:center;}
@@ -498,12 +509,12 @@ body.reduce-motion *{animation:none !important; transition:none !important;}
             <label class="switch"><input type="checkbox" id="settingSwipeToggle" checked><span class="slider"></span></label>
           </div>
           <div class="setting-row">
-            <div><div class="label">Reading direction</div></div>
-            <select id="settingReadingDir"><option value="ltr">Left to right</option><option value="rtl">Right to left</option></select>
+            <div><div class="label">Reading direction</div><div class="desc">Right-to-left reading is coming soon</div></div>
+            <select disabled><option>Left to right (default)</option></select>
           </div>
           <div class="setting-row">
-            <div><div class="label">Page transition</div></div>
-            <select id="settingPageTransition"><option value="none">None</option><option value="fade">Fade</option><option value="slide">Slide</option></select>
+            <div><div class="label">Page transition</div><div class="desc">Coming soon</div></div>
+            <select disabled><option>None (default)</option></select>
           </div>
           <div class="setting-row">
             <div><div class="label">Daily reading goal (pages)</div></div>
@@ -1466,6 +1477,7 @@ async function openFile(file){
     }
 
     enterReader();
+    forceDefaultZoom = true;
     goToPage(state.currentPage, true);
   }catch(e){
     console.error('openFile failed:', e);
@@ -1530,7 +1542,7 @@ async function goToPage(num, skipSave){
   if (rendering){ pendingPage = num; return; }
   rendering = true;
   const wasFinished = state.celebrated;
-  if (num !== state.currentPage) setZoom(1);
+  if (num !== state.currentPage || forceDefaultZoom){ setZoom(cachedSettings.defaultZoom || 1); forceDefaultZoom = false; }
   state.currentPage = num;
   el('pageInput').value = num;
   updateProgressUI();
@@ -2138,6 +2150,7 @@ document.addEventListener('keydown', (e)=>{
 
 let touchStartX=0, touchStartY=0, touchStartTime=0;
 let pdfZoom = 1;
+let forceDefaultZoom = false; // set true right before opening a fresh book so its default-zoom setting is applied once
 let panX = 0, panY = 0; // one-finger pan offset, in screen px — applied via CSS transform, never native scroll
 let pinchActive = false, pinchStartDist = 0, pinchStartZoom = 1;
 let panActive = false, panMoved = false, panStartClientX = 0, panStartClientY = 0, panOriginX = 0, panOriginY = 0;
@@ -2267,13 +2280,25 @@ el('dropzone').addEventListener('drop', (e)=>{ e.preventDefault(); el('dropzone'
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/sw.js");
 }
-  // ---------------- settings ----------------
+// ---------------- settings ----------------
+// readingDirection / pageTransition / dailyGoal removed from here: the first two were
+// never wired to anything (now honestly disabled in the UI instead), and dailyGoal's
+// real home is streak.goalPages — see updateSetting() and renderSettingsView() below.
 const DEFAULT_SETTINGS = {
   theme: 'system', reduceAnimations: false, accentColor: 'pink',
-  defaultZoom: 1, swipeEnabled: true, readingDirection: 'ltr',
-  pageTransition: 'none', dailyGoal: 10
+  defaultZoom: 1, swipeEnabled: true
 };
 let cachedSettings = { ...DEFAULT_SETTINGS };
+let systemThemeMedia = null;
+function applyTheme(theme){
+  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.body.classList.toggle('theme-dark', isDark);
+}
+function watchSystemTheme(){
+  if (systemThemeMedia || !window.matchMedia) return;
+  systemThemeMedia = window.matchMedia('(prefers-color-scheme: dark)');
+  systemThemeMedia.addEventListener('change', ()=>{ if (cachedSettings.theme === 'system') applyTheme('system'); });
+}
 async function loadSettings(){
   cachedSettings = { ...DEFAULT_SETTINGS, ...(await StorageManager.load('settings', false) || {}) };
   return cachedSettings;
@@ -2305,16 +2330,19 @@ async function renderSettingsView(){
   el('settingReduceAnim').checked = s.reduceAnimations;
   el('settingDefaultZoom').value = String(s.defaultZoom);
   el('settingSwipeToggle').checked = s.swipeEnabled;
-  el('settingReadingDir').value = s.readingDirection;
-  el('settingPageTransition').value = s.pageTransition;
-  el('settingDailyGoal').value = s.dailyGoal;
+  // The daily goal has three doors (Settings, the mood-card 🎯 pill, the Stats goal editor) —
+  // streak.goalPages is the one true value all three read/write, so we display straight
+  // from there instead of a separate settings.dailyGoal that could silently go stale.
+  const streak = await loadStreak();
+  el('settingDailyGoal').value = streak.goalPages || 10;
 }
 async function updateSetting(key, value){
   const s = await loadSettings();
   s[key] = value;
   await saveSettings(s);
   if (key === 'reduceAnimations') document.body.classList.toggle('reduce-motion', value);
-  if (key === 'dailyGoal'){ const streak = await loadStreak(); streak.goalPages = value; await saveStreak(streak); }
+  if (key === 'theme') applyTheme(value);
+  if (key === 'dailyGoal'){ const streak = await loadStreak(); streak.goalPages = value; await saveStreak(streak); renderMoodCard(); }
 }
 el('settingsBtn').addEventListener('click', openSettingsView);
 el('settingsBackBtn').addEventListener('click', closeSettingsView);
@@ -2322,8 +2350,6 @@ el('settingThemeSelect').addEventListener('change', e=> updateSetting('theme', e
 el('settingReduceAnim').addEventListener('change', e=> updateSetting('reduceAnimations', e.target.checked));
 el('settingDefaultZoom').addEventListener('change', e=> updateSetting('defaultZoom', parseFloat(e.target.value)));
 el('settingSwipeToggle').addEventListener('change', e=> updateSetting('swipeEnabled', e.target.checked));
-el('settingReadingDir').addEventListener('change', e=> updateSetting('readingDirection', e.target.value));
-el('settingPageTransition').addEventListener('change', e=> updateSetting('pageTransition', e.target.value));
 el('settingDailyGoal').addEventListener('change', e=> updateSetting('dailyGoal', parseInt(e.target.value)||10));
 
 el('resetEverythingBtn').addEventListener('click', ()=> el('resetConfirmScrim').classList.add('show'));
@@ -2442,6 +2468,8 @@ window.addEventListener('pagehide', ()=> endSession());
 checkStorageAvailability().then(async ()=>{
   const s = await loadSettings();
   if (s.reduceAnimations) document.body.classList.add('reduce-motion');
+  applyTheme(s.theme);
+  watchSystemTheme();
   await checkWelcomeBackMessage();
   renderShelf();
 });
